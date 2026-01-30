@@ -1,0 +1,45 @@
+{
+  "navbar": {
+    "home": "Home",
+    "friends": "Friends",
+    "profile": "Profile",
+    "logout": "Logout"
+  },
+  "auth": {
+    "login": "Sign In",
+    "signup": "Sign Up",
+    "email": "Email",
+    "password": "Password",
+    "username": "Username",
+    "confirmPassword": "Confirm Password",
+    "rememberMe": "Remember me",
+    "forgotPassword": "Forgot password?",
+    "noAccount": "Don't have an account?",
+    "haveAccount": "Already have an account?"
+  },
+  "profile": {
+    "myProfile": "My Profile",
+    "changeAvatar": "Change Avatar",
+    "saveChanges": "Save Changes",
+    "changePassword": "Change Password"
+  },
+  "friends": {
+    "myFriends": "My Friends",
+    "searchUsers": "Search for users...",
+    "addFriend": "Add Friend",
+    "removeFriend": "Remove",
+    "onlineNow": "Online now",
+    "lastSeen": "Last seen recently",
+    "noFriends": "You don't have any friends yet. Search for users to add them!"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "save": "Save",
+    "search": "Search"
+  }
+}
