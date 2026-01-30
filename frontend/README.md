@@ -1,4 +1,4 @@
-# Transcendence Frontend
+# ft_transcendence Frontend
 
 A modern React + Vite + Tailwind CSS frontend for the Transcendence trivia gaming platform.
 
