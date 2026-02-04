@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, Link, useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../hooks/useAuth'
 import { Avatar } from './Avatar'
 
 export function Navbar() {
+  const { t, i18n } = useTranslation()
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
@@ -27,10 +29,10 @@ export function Navbar() {
   if (!user) return null
 
   const navLinks = [
-    { name: 'Home', path: '/' },
-    { name: 'Ranking', path: '/ranking' },
-    { name: 'Shop', path: '/shop' },
-    { name: 'Profile', path: '/profile' },
+    { name: t('navbar.home'), path: '/' },
+    { name: t('navbar.ranking'), path: '/ranking' },
+    { name: t('navbar.shop'), path: '/shop' },
+    { name: t('navbar.profile'), path: '/profile' },
   ]
 
   return (
@@ -77,7 +79,7 @@ export function Navbar() {
               <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
                 {user.username}
               </p>
-              <p className="text-sm font-bold text-primary-500">Level {user.level || 1}</p>
+              <p className="text-sm font-bold text-primary-500">{t('navbar.level')} {user.level || 1}</p>
             </div>
 
             <Link to="/profile" className="relative">

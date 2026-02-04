@@ -1,93 +1,94 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Card } from '../components/common'
 
 function LeaderboardPage() {
-    const topPlayers = [
-        { rank: 4, name: 'Sarah_Quizzy', streak: 12, points: '12,150', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCBtHlK26QtY-gLVi6nexYVJWEGzTTI7r33VNdUBIR-kkTnIv_KbHUxYV8KmDPBOTCvH0fvRhdjnM6_LROLIvZaz5ubzqe8J1DWUD1fggCBsBRoRW_WkrEkDfI5mwrMoRRSSGlBlPfsbzBIkEscF-tU2BTg69o-O-T79lV1EHNsiAl40VFXHyA_e2gxzAAa4RYfwq_GVU75pbi8OQRMLZ-8SOlqW_9qPjypYTR4FxApi7yKbADQe9ENmzKVRSUjJPjkSQqe6L6bTQ' },
-        { rank: 5, name: 'MarkTheBrain', streak: 8, points: '11,900', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBsQ7hK3zihLi0XN0WYWdBWWPA6csl-Bd8lhMP8O5Wms7F3aLyFH1L6ZhmfeyEJ_ovjFFhHF5sYxGQJ_fK-goDmVNWTbVdATWHl6b1WhcPJG1m7RDksIZaZI2lf6rw5Sc1Jh5v0hRZkAu6FHuWP9y1_0_MwMuY-NUfGY8RV2-0zs86iXhX7JkZsbXLlWZfIWhTyN-i3nBI2Yv8UGPS_YxyZo11Zgb0RCqNQcZdmr1aHtHPTOOpB6LnGYU17YckAJWY1H1acBC0U1g' },
-        { rank: 6, name: 'LunaStargazer', streak: 5, points: '10,450', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC1x_m0cHbIigH0zH-1YETr9ZyeNfaFD-SKjlOG4I3ern1jjUKbaeDkl87ulyyHVLtSD9gz7BlbFFJER27d-zmKkL9O37TFNG48ymxcv0bMAWWCjcqFQNjczeXcnCXaspjN8HtqPAp5Q_MgvPiWFkWXOWieOvPJcKPbtY8mVOIasKp907zP2CVQHuMxdlvRSfarZ5lktrjIeBpa3KZgscR2-syhMdf9R0B3Kd2XRUI4b3qEYcJbFlsiEimkdUyumU_Tr5H88ZVlig' },
-        { rank: 7, name: 'QuizWiz_Phoebe', streak: 3, points: '9,820', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDT4BrXnfrU5I3xXNua8TL7PBCK3dVMB8fJ4vk95CTOapfDEUx4nJkqnUe_h8k_PbAvlmL_iCXdVvP9-Rxo8PZMyj84ZUedJo_Iv0r1ikAe6F-1VuheCNuXGNWJ4NEe8gftI3NLHdm52ehxbwS67JLcwz9DsxhtK6jirKm3_SOaQ4YLYz56iGR2CpPYeZuTCv5nIQebDS0F8nmylC2NFZGUkjJRPbVHlh8WXVnhbpwXWTNtMgBKr5Szw-zUqc_DQ--SGeD7VdksRQ' },
-        { rank: 8, name: 'Jake_Thunder', streak: 15, points: '9,100', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB4sbqFqGNykLyG0aSdNPFBJ8s6bLn-0hth8HxkYVFuhuhQo4sYy9CoZlz0RdC-SzBNO_FSUvY_4PGSIwx3-T6f91sQB2tqLVIbeNuI-09AcVbVmAHsnS4eXAPlhdB0hWs5QPE7d3HF7TOEPb04zWVf0syTg3ivsA-uUt1InJMfQVSTb_yd11-wenevrIx4yyUlsrfL6PWaUTN3z3BHUkuTo1DHBVDPkp180YwYca2fMBeE-Fmf4hocL1AxJoH4Gq6D61br3IfjoQ' },
-    ]
+    const { t } = useTranslation()
+    const [players, setPlayers] = useState([
+        { id: 1, username: 'QuizMaster', points: 12500, streak: 12, avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDmwMhaQR8XCBKdyX6ICfmG-KiG-ByIpqh_ShFw50NdDBVfbZqd5tlwFSrCpgL0hCsCQ-Qt1umnli60oAJWyTMGaPFBmsDDjeks42YicAlAyWBAnjaHA0dOA8vIoSmpExgvffLaUEsVSqhhmkL92I0yq3970wiHktQncfu6eOLk5U1WmpJJ5AUvMBFcN_hAFO7tyidvUUeR-hXo9qtYdDE96qRkyht_68D0OLOQYAknKSzs4K2vaDomvBGwhLGNaaBlAW6syEFmjw' },
+        { id: 2, username: 'TriviaQueen', points: 11200, streak: 8, avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDqYtYpHNqueaHCJ_KEuUqO79srB5qn_H1YdoNlxmnS2skXpoWyKJLDXcIymacWHmcBwX2ZhVvNtjq4frTME4uQinEwymKJFAmmXi-8_hALykEUHl-7J9ykPdrNShl9bE-8tYOCNSfKkXLKHi-QQNFOVbae6gmqvhQYQF_ialDJg2-qF19BuNCSdAN6vqh01MAxV7hcNz8HvzfBS6vK31thidG7DHHhdlxVwZ1D7nakVn_clnU9-DR1Q6V9uOC1UKCxHndExRlOhA' },
+        { id: 3, username: 'LogicWizard', points: 10800, streak: 15, avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDt8-76v9M854Y_hN-K79srB5qn_H1YdoNlxmnS2skXpoWyKJLDXcIymacWHmcBwX2ZhVvNtjq4frTME4uQinEwymKJFAmmXi-8_hALykEUHl-7J9ykPdrNShl9bE-8tYOCNSfKkXLKHi-QQNFOVbae6gmqvhQYQF_ialDJg2-qF19BuNCSdAN6vqh01MAxV7hcNz8HvzfBS6vK31thidG7DHHhdlxVwZ1D7nakVn_clnU9-DR1Q6V9uOC1UKCxHndExRlOhA' },
+    ])
 
     return (
-        <div className="max-w-4xl mx-auto pb-32">
-            <header className="mb-10 text-center">
+        <div className="max-w-4xl mx-auto space-y-12">
+            <div className="text-center space-y-4">
                 <h1 className="text-4xl font-extrabold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-primary-500 to-indigo-600 dark:from-sky-400 dark:to-indigo-400">
-                    Global Ranking
+                    {t('ranking.title')}
                 </h1>
-                <p className="text-slate-500 dark:text-slate-400">Compete with trivia masters around the world</p>
-            </header>
+                <p className="text-slate-500 dark:text-slate-400">{t('ranking.subtitle')}</p>
+            </div>
 
-            {/* Podium */}
-            <div className="flex flex-col md:flex-row items-end justify-center gap-4 mb-12 px-4">
-                {/* Rank 2 */}
-                <div className="w-full md:w-1/3 order-2 md:order-1 group">
-                    <div className="flex flex-col items-center">
-                        <div className="relative mb-4">
-                            <div className="w-20 h-20 rounded-full border-4 border-slate-300 dark:border-slate-500 overflow-hidden shadow-xl transform group-hover:scale-110 transition-transform">
-                                <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBy7wFKmRYdtNXYeD0Lmaz9FuoFjO4C3lmsBuV8mSRgP-ktVELcUVsE6eSFqToJgRx28vwibih_OCD-Qm-wrQs2Ia15dLUHFyyMLJYgJ78MNacpCGCY6wUbtYscR-HLq87fq6BEj27Rfr7nqFSW-HrNQkZmIqOLP-F6CMmQNk3JJ_Nd0UyxVod8W4TbjL6pPDV1gohPiHMz8q46Qqj22FAaGFK7Zuy-d_mUzYMCYBXOgZDJjdydcPu3AIK5RcXNBtB7muGEFzjLuA" alt="Rank 2" />
-                            </div>
-                            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-gradient-to-br from-slate-200 to-slate-400 w-8 h-8 rounded-full flex items-center justify-center text-white shadow-lg font-bold">2</div>
+            {/* Podium Section */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-end pt-12">
+                {/* 2nd Place */}
+                <div className="order-2 md:order-1 flex flex-col items-center space-y-4 pb-4">
+                    <div className="relative">
+                        <div className="w-24 h-24 rounded-full border-4 border-slate-300 overflow-hidden">
+                            <img src={players[1].avatar} alt={players[1].username} />
                         </div>
-                        <div className="w-full h-32 bg-gradient-to-br from-slate-200 to-slate-400 rounded-t-2xl p-4 flex flex-col items-center justify-start text-white shadow-lg">
-                            <span className="font-bold text-lg truncate w-full text-center">Felix_Trivia</span>
-                            <span className="text-sm opacity-90">14,820 pts</span>
-                        </div>
+                        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-slate-300 text-slate-800 font-bold px-3 py-1 rounded-full text-sm shadow-md">2nd</div>
+                    </div>
+                    <p className="font-bold text-lg">{players[1].username}</p>
+                    <div className="w-full h-32 bg-gradient-to-t from-slate-200 to-slate-100 dark:from-slate-800 dark:to-slate-700 rounded-t-2xl flex items-center justify-center">
+                        <span className="text-2xl font-black text-slate-400">{players[1].points}</span>
                     </div>
                 </div>
 
-                {/* Rank 1 */}
-                <div className="w-full md:w-1/3 order-1 md:order-2 group">
-                    <div className="flex flex-col items-center">
-                        <div className="relative mb-6">
-                            <span className="material-symbols-rounded absolute -top-10 left-1/2 -translate-x-1/2 text-yellow-400 text-5xl animate-bounce">workspace_premium</span>
-                            <div className="w-28 h-28 rounded-full border-4 border-yellow-400 overflow-hidden shadow-2xl transform group-hover:scale-110 transition-transform">
-                                <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuB5KxaE_UMAoOcBFLSYVhlLYNRM5M9y50tPbcvzFDWkOSordGklanFQcGPqSFNuApfilkmLnr6v61VCOLgcxZRbEBact3ANgx9uEQq8L5DXc8fklSPxBWIbshsJmRYP8nl4qZEg9-zDCd4hs_wEMjPVfyV35qfB8JOberivB1Yxbd9sor845O4Gm0JzwE99sRK9R5dGxik3w-Vsq0E8sMCcRWj30rtUNIIqmi2akJX5xUNUIKmB1r7LFitHiyNZF192XyL1SHs3aQ" alt="Rank 1" />
-                            </div>
-                            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-gradient-to-br from-yellow-300 to-amber-500 w-10 h-10 rounded-full flex items-center justify-center text-white shadow-lg font-bold text-lg">1</div>
+                {/* 1st Place */}
+                <div className="order-1 md:order-2 flex flex-col items-center space-y-4 scale-110 relative z-10">
+                    <div className="relative">
+                        <div className="w-32 h-32 rounded-full border-4 border-yellow-400 overflow-hidden shadow-[0_0_30px_rgba(250,204,21,0.3)]">
+                            <img src={players[0].avatar} alt={players[0].username} />
                         </div>
-                        <div className="w-full h-44 bg-gradient-to-br from-yellow-300 to-amber-500 rounded-t-2xl p-6 flex flex-col items-center justify-start text-white shadow-2xl">
-                            <span className="font-extrabold text-xl truncate w-full text-center">TriviaQueen_99</span>
-                            <span className="text-md opacity-90 font-semibold">18,250 pts</span>
-                        </div>
+                        <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-4xl animate-bounce">👑</div>
+                        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-yellow-400 text-yellow-900 font-bold px-4 py-1 rounded-full shadow-lg">1st</div>
+                    </div>
+                    <p className="font-black text-2xl">{players[0].username}</p>
+                    <div className="w-full h-48 bg-gradient-to-t from-primary-500 to-sky-400 rounded-t-3xl flex items-center justify-center shadow-xl">
+                        <span className="text-4xl font-black text-white">{players[0].points}</span>
                     </div>
                 </div>
 
-                {/* Rank 3 */}
-                <div className="w-full md:w-1/3 order-3 md:order-3 group">
-                    <div className="flex flex-col items-center">
-                        <div className="relative mb-4">
-                            <div className="w-20 h-20 rounded-full border-4 border-orange-400 dark:border-orange-600 overflow-hidden shadow-xl transform group-hover:scale-110 transition-transform">
-                                <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCdb1YDdJelwF0tL_4rHVfI73pfWKAqFwK4xyrazLXbAmJkzjeG9fE5gPxFxc0-0kCN63Lxy1CJ9xP1UfEchQflOY-I_RqIATYcGQMBqaO_47ehRtbB146jlkGPFKWLskZgjlWsaU987hw_JZ73h1qQfNLC7WpKOM6Z_vaGW638JUqs_aXpLJOu_yXyAD1n5TrFVodPlefHWRmHpDqS_w_RTPyD3X8bKgihDc6eoDHIWao_eBd2dJwbVpHQLldKzzMKgT0CshdplA" alt="Rank 3" />
-                            </div>
-                            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-gradient-to-br from-orange-300 to-orange-600 w-8 h-8 rounded-full flex items-center justify-center text-white shadow-lg font-bold">3</div>
+                {/* 3rd Place */}
+                <div className="order-3 md:order-3 flex flex-col items-center space-y-4 pb-4">
+                    <div className="relative">
+                        <div className="w-24 h-24 rounded-full border-4 border-orange-400 overflow-hidden">
+                            <img src={players[2].avatar} alt={players[2].username} />
                         </div>
-                        <div className="w-full h-24 bg-gradient-to-br from-orange-300 to-orange-600 rounded-t-2xl p-4 flex flex-col items-center justify-start text-white shadow-lg">
-                            <span className="font-bold text-lg truncate w-full text-center">AlexMaster</span>
-                            <span className="text-sm opacity-90">13,400 pts</span>
-                        </div>
+                        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-orange-400 text-orange-900 font-bold px-3 py-1 rounded-full text-sm shadow-md">3rd</div>
+                    </div>
+                    <p className="font-bold text-lg">{players[2].username}</p>
+                    <div className="w-full h-24 bg-gradient-to-t from-orange-200 to-orange-100 dark:from-orange-900/40 dark:to-orange-800/20 rounded-t-2xl flex items-center justify-center">
+                        <span className="text-2xl font-black text-orange-400">{players[2].points}</span>
                     </div>
                 </div>
             </div>
 
-            <div className="space-y-3">
-                {topPlayers.map((player) => (
-                    <div key={player.rank} className="glass flex items-center p-4 rounded-2xl shadow-sm hover:shadow-md transition-shadow group">
-                        <div className="w-12 font-bold text-slate-400 dark:text-slate-500 text-lg">#{player.rank}</div>
-                        <div className="w-12 h-12 rounded-full overflow-hidden mr-4 border border-slate-200 dark:border-slate-700">
-                            <img src={player.avatar} alt={player.name} />
+            {/* List Section */}
+            <Card className="p-0 overflow-hidden">
+                <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {players.map((player, index) => (
+                        <div key={player.id} className="flex items-center justify-between p-6 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                            <div className="flex items-center gap-6">
+                                <span className="text-xl font-black text-slate-300 w-6">#{index + 1}</span>
+                                <div className="relative">
+                                    <img src={player.avatar} alt={player.username} className="w-12 h-12 rounded-full border-2 border-white dark:border-slate-700" />
+                                    {index < 3 && <div className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-400 rounded-full border-2 border-white dark:border-slate-800"></div>}
+                                </div>
+                                <div>
+                                    <p className="font-bold text-slate-800 dark:text-white">{player.username}</p>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400">{t('ranking.streak')}: {player.streak}</p>
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-xl font-black text-primary-500">{player.points.toLocaleString()}</p>
+                                <div className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">{t('ranking.points')}</div>
+                            </div>
                         </div>
-                        <div className="flex-grow">
-                            <h4 className="font-bold group-hover:text-primary-500 transition-colors uppercase">{player.name}</h4>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">Current Streak: {player.streak}</p>
-                        </div>
-                        <div className="text-right">
-                            <div className="font-extrabold text-slate-800 dark:text-slate-200">{player.points}</div>
-                            <div className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Points</div>
-                        </div>
-                    </div>
-                ))}
-            </div>
+                    ))}
+                </div>
+            </Card>
         </div>
     )
 }

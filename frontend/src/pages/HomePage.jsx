@@ -1,8 +1,10 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../hooks/useAuth'
 
 function HomePage() {
+  const { t } = useTranslation()
   const { user } = useAuth()
 
   return (
@@ -11,10 +13,10 @@ function HomePage() {
       <section className="text-center space-y-8">
         <div className="space-y-4">
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight">
-            Ready for the <span className="text-gradient">Challenge?</span>
+            {t('home.readyChallenge').split('Challenge?')[0]} <span className="text-gradient">Challenge?</span>
           </h1>
           <p className="text-lg text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
-            Battle your friends in real-time and show who's the true trivia master.
+            {t('home.heroSubtitle')}
           </p>
         </div>
 
@@ -24,14 +26,14 @@ function HomePage() {
             className="group relative px-12 py-6 bg-gradient-to-br from-[#0ea5e9] to-[#0369a1] text-white rounded-2xl font-black text-3xl juicy-shadow hover:scale-105 active:scale-95 transition-all duration-200 flex items-center gap-4"
           >
             <span className="material-icons-round text-4xl">play_arrow</span>
-            PLAY NOW
+            {t('home.playNow')}
             <div className="absolute -top-3 -right-3 bg-yellow-400 text-yellow-900 text-xs px-2 py-1 rounded-full animate-bounce font-bold shadow-sm">
               +50 XP
             </div>
           </Link>
           <div className="mt-6 flex items-center gap-2 text-slate-400 dark:text-slate-500">
             <span className="material-icons-round text-sm">group</span>
-            <span className="text-sm font-semibold">1,248 players online now</span>
+            <span className="text-sm font-semibold">1,248 {t('home.playersOnline')}</span>
           </div>
         </div>
       </section>
@@ -41,31 +43,31 @@ function HomePage() {
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold flex items-center gap-2">
             <span className="material-icons-round text-secondary-500">category</span>
-            Game Modes
+            {t('home.gameModes')}
           </h2>
           <Link to="/modes" className="text-primary-500 font-semibold hover:underline">
-            View all
+            {t('home.viewAll')}
           </Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <GameModeCard
-            title="Classic"
-            description="10 questions from various topics. Accuracy is what matters here!"
+            title={t('home.classic')}
+            description={t('home.classicDesc')}
             icon="emoji_events"
             color="purple"
             to="/lobby?mode=classic"
           />
           <GameModeCard
-            title="Survival"
-            description="Answer as many as you can without missing. Time is your greatest enemy."
+            title={t('home.survival')}
+            description={t('home.survivalDesc')}
             icon="timer"
             color="red"
             to="/lobby?mode=survival"
           />
           <GameModeCard
-            title="Quick Duel"
-            description="Challenge a friend or random opponent for a frantic 1v1."
+            title={t('home.timed')}
+            description={t('home.timedDesc')}
             icon="bolt"
             color="amber"
             to="/lobby?mode=duel"
@@ -78,18 +80,18 @@ function HomePage() {
         <div className="lg:col-span-2 glass rounded-2xl p-8 space-y-6">
           <h3 className="text-xl font-bold flex items-center gap-2">
             <span className="material-icons-round text-yellow-500">stars</span>
-            Recent Achievements
+            {t('home.recentAchievements')}
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <AchievementCard
-              title="Unstoppable Streak"
-              description="5 wins in a row"
+              title={t('home.triviaKing')}
+              description={t('home.triviaKingDesc')}
               icon="local_fire_department"
               color="blue"
             />
             <AchievementCard
-              title="History Genius"
-              description="100% accuracy in the category"
+              title={t('home.fastLearner')}
+              description={t('home.fastLearnerDesc')}
               icon="psychology"
               color="green"
             />
@@ -99,24 +101,24 @@ function HomePage() {
         {/* Online Friends */}
         <div className="glass rounded-2xl p-8 space-y-6">
           <h3 className="text-xl font-bold flex items-center justify-between">
-            Online Friends
+            {t('home.friends')}
             <span className="bg-green-500 w-2 h-2 rounded-full"></span>
           </h3>
           <div className="space-y-4">
             <FriendItem
               name="Felix_One"
-              status="Playing"
+              status={t('home.playing')}
               avatar="https://lh3.googleusercontent.com/aida-public/AB6AXuDmwMhaQR8XCBKdyX6ICfmG-KiG-ByIpqh_ShFw50NdDBVfbZqd5tlwFSrCpgL0hCsCQ-Qt1umnli60oAJWyTMGaPFBmsDDjeks42YicAlAyWBAnjaHA0dOA8vIoSmpExgvffLaUEsVSqhhmkL92I0yq3970wiHktQncfu6eOLk5U1WmpJJ5AUvMBFcN_hAFO7tyidvUUeR-hXo9qtYdDE96qRkyht_68D0OLOQYAknKSzs4K2vaDomvBGwhLGNaaBlAW6syEFmjw"
               online
             />
             <FriendItem
               name="LunaStar"
-              status="Offline"
+              status={t('home.offline')}
               avatar="https://lh3.googleusercontent.com/aida-public/AB6AXuDqYtYpHNqueaHCJ_KEuUqO79srB5qn_H1YdoNlxmnS2skXpoWyKJLDXcIymacWHmcBwX2ZhVvNtjq4frTME4uQinEwymKJFAmmXi-8_hALykEUHl-7J9ykPdrNShl9bE-8tYOCNSfKkXLKHi-QQNFOVbae6gmqvhQYQF_ialDJg2-qF19BuNCSdAN6vqh01MAxV7hcNz8HvzfBS6vK31thidG7DHHhdlxVwZ1D7nakVn_clnU9-DR1Q6V9uOC1UKCxHndExRlOhA"
             />
           </div>
           <Link to="/friends" className="block w-full py-2 text-sm font-bold text-slate-400 hover:text-primary-500 text-center transition-colors border-t border-slate-200 dark:border-slate-700 mt-4 pt-4">
-            View all friends
+            {t('home.viewAll')}
           </Link>
         </div>
       </div>
@@ -125,6 +127,7 @@ function HomePage() {
 }
 
 function GameModeCard({ title, description, icon, color, to }) {
+  const { t } = useTranslation()
   const colors = {
     purple: 'from-purple-400 to-purple-600 ring-secondary-500 bg-secondary-500/10',
     red: 'from-red-400 to-red-600 ring-red-500 bg-red-500/10',
@@ -147,7 +150,7 @@ function GameModeCard({ title, description, icon, color, to }) {
         <h3 className="text-2xl font-bold">{title}</h3>
         <p className="text-slate-500 dark:text-slate-400">{description}</p>
         <div className={`pt-4 flex items-center gap-2 ${textColor[color]} font-bold`}>
-          Start <span className="material-icons-round group-hover:translate-x-1 transition-transform">arrow_forward</span>
+          {t('lobby.ready')} <span className="material-icons-round group-hover:translate-x-1 transition-transform">arrow_forward</span>
         </div>
       </div>
     </Link>

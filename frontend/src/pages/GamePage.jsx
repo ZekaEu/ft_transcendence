@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../hooks/useAuth'
 
 function GamePage() {
+    const { t } = useTranslation()
     const { user } = useAuth()
     const navigate = useNavigate()
     const [gameState, setGameState] = useState('question') // 'question', 'feedback', 'results'
@@ -49,7 +51,7 @@ function GamePage() {
             {/* Timer Bar */}
             <div className="w-full max-w-3xl mb-12">
                 <div className="flex justify-between items-end mb-2">
-                    <span className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Time Remaining</span>
+                    <span className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">{t('game.timeRemaining')}</span>
                     <span className={`text-2xl font-black ${timeLeft < 5 ? 'text-red-500 animate-pulse' : 'text-yellow-500'}`}>{timeLeft}s</span>
                 </div>
                 <div className="h-4 w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
@@ -64,7 +66,7 @@ function GamePage() {
             <div className="w-full glass rounded-[2rem] p-8 md:p-12 mb-12 shadow-2xl text-center relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary-500 to-purple-500"></div>
                 <span className="inline-block px-4 py-1 rounded-full bg-primary-500/10 text-primary-500 text-xs font-bold uppercase tracking-wider mb-6">
-                    Question {streak + 3} of 15
+                    {t('game.questionOf', { current: streak + 3, total: 15 })}
                 </span>
                 <h2 className="text-3xl md:text-4xl font-extrabold leading-tight text-slate-800 dark:text-white">
                     Which planet in our solar system is known as the "Red Planet"?
@@ -111,12 +113,12 @@ function GamePage() {
             <div className="w-full flex flex-wrap items-center justify-between gap-6 pt-8 border-t border-slate-200 dark:border-slate-800">
                 <div className="flex items-center gap-4">
                     <div className="flex flex-col">
-                        <span className="text-[10px] uppercase font-bold text-slate-400 tracking-widest">Score</span>
+                        <span className="text-[10px] uppercase font-bold text-slate-400 tracking-widest">{t('game.score')}</span>
                         <span className="text-2xl font-black text-primary-500">{score}</span>
                     </div>
                     <div className="w-px h-8 bg-slate-200 dark:bg-slate-800"></div>
                     <div className="flex flex-col">
-                        <span className="text-[10px] uppercase font-bold text-slate-400 tracking-widest">Combo</span>
+                        <span className="text-[10px] uppercase font-bold text-slate-400 tracking-widest">{t('game.combo')}</span>
                         <span className="text-2xl font-black text-orange-500 flex items-center gap-1">
                             {streak} <span className="material-icons-round text-sm">local_fire_department</span>
                         </span>
@@ -135,9 +137,9 @@ function GamePage() {
                 <div className="fixed bottom-6 flex flex-col items-center gap-2 animate-in fade-in slide-in-from-bottom-4">
                     <div className={`flex items-center gap-2 font-bold ${selectedAnswer === 1 ? 'text-green-500' : 'text-red-500'}`}>
                         <span className="material-icons-round">{selectedAnswer === 1 ? 'check_circle' : 'cancel'}</span>
-                        <span>{selectedAnswer === 1 ? 'Amazing! You got it right!' : 'Almost! The correct answer was Mars.'}</span>
+                        <span>{selectedAnswer === 1 ? t('game.amazing') : t('game.almost', { answer: 'Mars' })}</span>
                     </div>
-                    <p className="text-slate-400 text-sm font-medium">Next question coming soon...</p>
+                    <p className="text-slate-400 text-sm font-medium">{t('game.nextQuestion')}</p>
                 </div>
             )}
         </div>
@@ -187,13 +189,14 @@ function PowerUpButton({ label, icon, title }) {
 }
 
 function VictoryView({ user, navigate }) {
+    const { t } = useTranslation()
     return (
         <main className="relative z-10 max-w-4xl mx-auto text-center animate-in zoom-in duration-500">
             <div className="mb-8 animate-bounce-slow">
                 <h1 className="text-7xl md:text-8xl font-black text-yellow-500 dark:text-yellow-400 italic tracking-tighter uppercase">
-                    VICTORY!
+                    {t('game.victory')}
                 </h1>
-                <p className="text-xl font-bold text-sky-600 dark:text-sky-300 mt-2">You dominated the board!</p>
+                <p className="text-xl font-bold text-sky-600 dark:text-sky-300 mt-2">{t('game.dominated')}</p>
             </div>
 
             <div className="glass rounded-[2.5rem] p-8 md:p-12 shadow-2xl">
@@ -208,7 +211,7 @@ function VictoryView({ user, navigate }) {
                         </div>
                     </div>
                     <div className="space-y-1">
-                        <span className="text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest text-xs">Final Score</span>
+                        <span className="text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest text-xs">{t('game.finalScore')}</span>
                         <div className="text-6xl font-black text-slate-900 dark:text-white flex items-center justify-center gap-2">
                             2,500 <span className="text-2xl text-primary-500">pts</span>
                         </div>
@@ -218,18 +221,18 @@ function VictoryView({ user, navigate }) {
                 <div className="max-w-md mx-auto mb-12">
                     <div className="flex justify-between items-end mb-3">
                         <div className="text-left">
-                            <span className="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase">Current Level</span>
+                            <span className="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase">{t('game.currentLevel')}</span>
                             <span className="text-2xl font-black text-primary-500">LVL {user?.level || 15}</span>
                         </div>
                         <div className="text-right">
-                            <span className="block text-xs font-bold text-sky-400 uppercase animate-pulse">Level Up!</span>
+                            <span className="block text-xs font-bold text-sky-400 uppercase animate-pulse">{t('game.levelUp')}</span>
                             <span className="text-2xl font-black text-yellow-500">LVL {(user?.level || 15) + 1}</span>
                         </div>
                     </div>
                     <div className="relative h-6 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden border-2 border-slate-100 dark:border-slate-700 shadow-inner">
                         <div className="absolute top-0 left-0 h-full bg-gradient-to-r from-primary-500 to-sky-400 animate-fill-bar rounded-full shadow-[0_0_15px_rgba(14,165,233,0.5)]"></div>
                     </div>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm font-medium mt-3">+450 XP earned this match</p>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm font-medium mt-3">{t('game.matchXP', { xp: 450 })}</p>
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -237,13 +240,13 @@ function VictoryView({ user, navigate }) {
                         onClick={() => window.location.reload()}
                         className="group relative flex-1 max-w-xs py-5 px-8 bg-gradient-to-r from-primary-500 to-blue-600 text-white font-black text-xl rounded-2xl shadow-xl transform transition-all active:scale-95 hover:-translate-y-1"
                     >
-                        REMATCH
+                        {t('game.rematch')}
                     </button>
                     <button
                         onClick={() => navigate('/')}
                         className="flex-1 max-w-xs py-5 px-8 bg-transparent border-2 border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:text-primary-500 font-bold text-xl rounded-2xl transition-all active:scale-95"
                     >
-                        Back to Menu
+                        {t('game.backMenu')}
                     </button>
                 </div>
             </div>

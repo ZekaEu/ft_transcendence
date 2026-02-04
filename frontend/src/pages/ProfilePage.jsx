@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../hooks/useAuth'
+import { useTranslation } from 'react-i18next'
 import { Button, Input, Card, Avatar, Spinner } from '../components/common'
 import toast from 'react-hot-toast'
 
 function ProfilePage() {
+  const { t } = useTranslation()
   const { user, updateUser } = useAuth()
   const [loading, setLoading] = useState(false)
   const [username, setUsername] = useState(user?.username || '')
@@ -32,9 +34,9 @@ function ProfilePage() {
         email,
         avatar: avatarPreview,
       })
-      toast.success('Profile updated successfully!')
+      toast.success(t('profile.updated'))
     } catch (err) {
-      toast.error('Failed to update profile')
+      toast.error(t('profile.updateFailed'))
     } finally {
       setLoading(false)
     }
@@ -45,7 +47,7 @@ function ProfilePage() {
   return (
     <div className="max-w-2xl mx-auto animate-fade-in">
       <Card>
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">My Profile</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">{t('profile.myProfile')}</h1>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Avatar */}
@@ -58,7 +60,7 @@ function ProfilePage() {
             <div>
               <label className="block">
                 <Button type="button" variant="outline">
-                  Change Avatar
+                  {t('profile.changeAvatar')}
                 </Button>
                 <input
                   type="file"
@@ -72,7 +74,7 @@ function ProfilePage() {
 
           {/* Username */}
           <Input
-            label="Username"
+            label={t('profile.username')}
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
@@ -81,7 +83,7 @@ function ProfilePage() {
 
           {/* Email */}
           <Input
-            label="Email"
+            label={t('profile.email')}
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -95,14 +97,14 @@ function ProfilePage() {
               type="submit"
               disabled={loading}
             >
-              {loading ? 'Saving...' : 'Save Changes'}
+              {loading ? t('profile.saving') : t('profile.saveChanges')}
             </Button>
             <Button
               type="button"
               variant="outline"
               disabled={loading}
             >
-              Change Password
+              {t('profile.changePassword')}
             </Button>
           </div>
         </form>

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../hooks/useAuth'
+import { useTranslation } from 'react-i18next'
 import { Button, Input, Card, Avatar, Spinner, Badge } from '../components/common'
 import toast from 'react-hot-toast'
 
 function FriendsPage() {
+  const { t } = useTranslation()
   const { user } = useAuth()
   const [friends, setFriends] = useState([])
   const [searchQuery, setSearchQuery] = useState('')
@@ -47,19 +49,19 @@ function FriendsPage() {
 
   return (
     <div className="max-w-4xl mx-auto animate-fade-in">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Friends</h1>
+      <h1 className="text-3xl font-bold text-gray-900 mb-8">{t('friends.title')}</h1>
 
       {/* Search */}
       <Card className="mb-8">
         <form onSubmit={handleSearch} className="flex gap-2">
           <Input
-            placeholder="Search for users..."
+            placeholder={t('friends.searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             disabled={loading}
           />
           <Button type="submit" disabled={loading}>
-            Search
+            {t('friends.search')}
           </Button>
         </form>
 
@@ -76,7 +78,7 @@ function FriendsPage() {
                   </div>
                 </div>
                 <Button size="sm" onClick={() => handleAddFriend(result.id)}>
-                  Add Friend
+                  {t('friends.addFriend')}
                 </Button>
               </div>
             ))}
@@ -86,10 +88,10 @@ function FriendsPage() {
 
       {/* Friends List */}
       <Card>
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Your Friends ({friends.length})</h2>
+        <h2 className="text-xl font-bold text-gray-900 mb-4">{t('friends.myFriends')} ({friends.length})</h2>
 
         {friends.length === 0 ? (
-          <p className="text-gray-600">You don't have any friends yet. Search for users to add them!</p>
+          <p className="text-gray-600">{t('friends.noFriends')}</p>
         ) : (
           <div className="space-y-3">
             {friends.map((friend) => (
@@ -104,7 +106,7 @@ function FriendsPage() {
                   <div>
                     <p className="font-semibold">{friend.username}</p>
                     <p className="text-sm text-gray-500">
-                      {friend.online ? 'Online now' : 'Last seen recently'}
+                      {friend.online ? t('friends.onlineNow') : t('friends.lastSeen')}
                     </p>
                   </div>
                 </div>
@@ -113,7 +115,7 @@ function FriendsPage() {
                   variant="danger"
                   onClick={() => handleRemoveFriend(friend.id)}
                 >
-                  Remove
+                  {t('friends.remove')}
                 </Button>
               </div>
             ))}
