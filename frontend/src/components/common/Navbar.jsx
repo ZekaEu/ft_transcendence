@@ -21,6 +21,12 @@ export function Navbar() {
     }
   }
 
+  const toggleLanguage = () => {
+    const nextLang = i18n.language === 'en' ? 'pt' : 'en'
+    i18n.changeLanguage(nextLang)
+    localStorage.setItem('language', nextLang)
+  }
+
   const handleLogout = async () => {
     await logout()
     navigate('/login')
@@ -67,6 +73,13 @@ export function Navbar() {
         {/* Action Menu */}
         <div className="flex items-center gap-4">
           <button
+            onClick={toggleLanguage}
+            className="px-2 py-1 rounded-lg text-xs font-black bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-primary-500 transition-all uppercase"
+          >
+            {i18n.language === 'en' ? 'PT' : 'EN'}
+          </button>
+
+          <button
             onClick={toggleDarkMode}
             className="p-2 rounded-full hover:bg-sky-100 dark:hover:bg-slate-800 transition-colors"
           >
@@ -95,7 +108,7 @@ export function Navbar() {
             <button
               onClick={handleLogout}
               className="ml-2 text-slate-400 hover:text-red-500 transition-colors"
-              title="Logout"
+              title={t('navbar.logout')}
             >
               <span className="material-icons-round">logout</span>
             </button>
