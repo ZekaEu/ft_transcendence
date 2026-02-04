@@ -2,6 +2,7 @@ import React from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from './context/AuthContext'
+import { MainLayout } from './components/layout'
 import ProtectedRoute from './components/common/ProtectedRoute'
 
 // Pages
@@ -10,6 +11,10 @@ import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
 import ProfilePage from './pages/ProfilePage'
 import FriendsPage from './pages/FriendsPage'
+import GamePage from './pages/GamePage'
+import LeaderboardPage from './pages/LeaderboardPage'
+import LobbyPage from './pages/LobbyPage'
+import ShopPage from './pages/ShopPage'
 import NotFoundPage from './pages/NotFoundPage'
 
 function App() {
@@ -26,7 +31,9 @@ function App() {
             path="/"
             element={
               <ProtectedRoute>
-                <HomePage />
+                <MainLayout>
+                  <HomePage />
+                </MainLayout>
               </ProtectedRoute>
             }
           />
@@ -34,7 +41,9 @@ function App() {
             path="/profile"
             element={
               <ProtectedRoute>
-                <ProfilePage />
+                <MainLayout>
+                  <ProfilePage />
+                </MainLayout>
               </ProtectedRoute>
             }
           />
@@ -42,7 +51,49 @@ function App() {
             path="/friends"
             element={
               <ProtectedRoute>
-                <FriendsPage />
+                <MainLayout>
+                  <FriendsPage />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/ranking"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <LeaderboardPage />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/shop"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <ShopPage />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/lobby"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <LobbyPage />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/game"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <GamePage />
+                </MainLayout>
               </ProtectedRoute>
             }
           />

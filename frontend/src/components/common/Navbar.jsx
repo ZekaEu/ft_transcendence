@@ -1,13 +1,23 @@
-import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
-import { Button } from './Button'
 import { Avatar } from './Avatar'
 
 export function Navbar() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const location = useLocation()
+  const [isDark, setIsDark] = useState(document.documentElement.classList.contains('dark'))
+
+  const toggleDarkMode = () => {
+    const newDark = !isDark
+    setIsDark(newDark)
+    if (newDark) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+  }
 
   const handleLogout = async () => {
     await logout()
@@ -16,68 +26,79 @@ export function Navbar() {
 
   if (!user) return null
 
+  const navLinks = [
+    { name: 'Home', path: '/' },
+    { name: 'Ranking', path: '/ranking' },
+    { name: 'Shop', path: '/shop' },
+    { name: 'Profile', path: '/profile' },
+  ]
+
   return (
-    <nav className="bg-white shadow-md sticky top-0 z-40">
-      <div className="max-w-7xl mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
-          {/* Logo */}
-          <Link to="/" className="text-2xl font-bold text-primary-600">
-            Triple Trouble Trivia
-          </Link>
-
-          {/* Desktop Menu */}
-          <div className="hidden md:flex items-center gap-6">
-            <Link to="/" className="text-gray-700 hover:text-primary-600 transition">
-              Home
-            </Link>
-            <Link to="/friends" className="text-gray-700 hover:text-primary-600 transition">
-              Friends
-            </Link>
-            <Link to="/profile" className="text-gray-700 hover:text-primary-600 transition">
-              Profile
-            </Link>
+    <nav className="sticky top-0 z-50 glass border-b border-sky-100 dark:border-slate-800 px-6 py-4">
+      <div className="max-w-7xl mx-auto flex items-center justify-between">
+        {/* Logo */}
+        <Link to="/" className="flex items-center gap-2">
+          <div className="bg-primary-500 p-2 rounded-xl text-white">
+            <span className="material-icons-round">quiz</span>
           </div>
+          <span className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+            Triple Trouble <span className="text-primary-500">Trivia</span>
+          </span>
+        </Link>
 
-          {/* User Menu */}
-          <div className="flex items-center gap-4">
-            <Avatar
-              src={user.avatar || 'https://via.placeholder.com/40'}
-              alt={user.username}
-              size="md"
-              online={user.online}
-            />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleLogout}
+        {/* Desktop Menu */}
+        <div className="hidden md:flex items-center gap-8 font-semibold">
+          {navLinks.map((link) => (
+            <Link
+              key={link.path}
+              to={link.path}
+              className={`transition-colors ${location.pathname === link.path
+                ? 'text-primary-500 border-b-2 border-primary-500 pb-1'
+                : 'text-slate-600 dark:text-slate-300 hover:text-primary-500'
+                }`}
             >
-              Logout
-            </Button>
-          </div>
-
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden text-gray-700"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            ☰
-          </button>
+              {link.name}
+            </Link>
+          ))}
         </div>
 
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden mt-4 flex flex-col gap-2">
-            <Link to="/" className="text-gray-700 hover:text-primary-600">
-              Home
+        {/* Action Menu */}
+        <div className="flex items-center gap-4">
+          <button
+            onClick={toggleDarkMode}
+            className="p-2 rounded-full hover:bg-sky-100 dark:hover:bg-slate-800 transition-colors"
+          >
+            <span className="material-icons-round block dark:hidden">dark_mode</span>
+            <span className="material-icons-round hidden dark:block">light_mode</span>
+          </button>
+
+          <div className="flex items-center gap-3 pl-4 border-l border-sky-200 dark:border-slate-700">
+            <div className="hidden sm:block text-right">
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                {user.username}
+              </p>
+              <p className="text-sm font-bold text-primary-500">Level {user.level || 1}</p>
+            </div>
+
+            <Link to="/profile" className="relative">
+              <Avatar
+                src={user.avatar}
+                alt={user.username}
+                size="md"
+                className="ring-2 ring-primary-500"
+              />
+              <div className={`absolute -bottom-1 -right-1 w-3 h-3 border-2 border-white dark:border-slate-900 rounded-full ${user.online ? 'bg-green-500' : 'bg-gray-400'}`}></div>
             </Link>
-            <Link to="/friends" className="text-gray-700 hover:text-primary-600">
-              Friends
-            </Link>
-            <Link to="/profile" className="text-gray-700 hover:text-primary-600">
-              Profile
-            </Link>
+
+            <button
+              onClick={handleLogout}
+              className="ml-2 text-slate-400 hover:text-red-500 transition-colors"
+              title="Logout"
+            >
+              <span className="material-icons-round">logout</span>
+            </button>
           </div>
-        )}
+        </div>
       </div>
     </nav>
   )

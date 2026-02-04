@@ -21,9 +21,12 @@ export default {
           600: '#9333ea',
           700: '#7e22ce',
         },
+        "background-light": "#f0f9ff",
+        "background-dark": "#0f172a",
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
+        display: ["'Plus Jakarta Sans'", "sans-serif"],
       },
       spacing: {
         xs: '0.5rem',

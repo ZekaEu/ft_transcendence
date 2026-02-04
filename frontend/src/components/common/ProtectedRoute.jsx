@@ -8,8 +8,8 @@ export function ProtectedRoute({ children }) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600" />
+      <div className="flex items-center justify-center h-screen bg-background-light dark:bg-background-dark">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500" />
       </div>
     )
   }
@@ -18,14 +18,7 @@ export function ProtectedRoute({ children }) {
     return <Navigate to="/login" />
   }
 
-  return (
-    <>
-      <Navbar />
-      <main className="max-w-7xl mx-auto px-4 py-8">
-        {children}
-      </main>
-    </>
-  )
+  return children
 }
 
 export default ProtectedRoute
