@@ -1,0 +1,45 @@
+{
+  "navbar": {
+    "home": "Accueil",
+    "friends": "Amis",
+    "profile": "Profil",
+    "logout": "Déconnexion"
+  },
+  "auth": {
+    "login": "Se connecter",
+    "signup": "S'inscrire",
+    "email": "Email",
+    "password": "Mot de passe",
+    "username": "Nom d'utilisateur",
+    "confirmPassword": "Confirmer le mot de passe",
+    "rememberMe": "Se souvenir de moi",
+    "forgotPassword": "Mot de passe oublié?",
+    "noAccount": "Vous n'avez pas de compte?",
+    "haveAccount": "Vous avez déjà un compte?"
+  },
+  "profile": {
+    "myProfile": "Mon Profil",
+    "changeAvatar": "Changer l'avatar",
+    "saveChanges": "Enregistrer les modifications",
+    "changePassword": "Changer le mot de passe"
+  },
+  "friends": {
+    "myFriends": "Mes Amis",
+    "searchUsers": "Rechercher des utilisateurs...",
+    "addFriend": "Ajouter un ami",
+    "removeFriend": "Supprimer",
+    "onlineNow": "En ligne maintenant",
+    "lastSeen": "Vu récemment",
+    "noFriends": "Vous n'avez pas encore d'amis. Recherchez des utilisateurs pour les ajouter!"
+  },
+  "common": {
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "save": "Enregistrer",
+    "search": "Rechercher"
+  }
+}

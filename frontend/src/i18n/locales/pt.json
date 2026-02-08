@@ -1,0 +1,119 @@
+{
+    "navbar": {
+        "home": "Início",
+        "ranking": "Ranking",
+        "shop": "Loja",
+        "profile": "Perfil",
+        "level": "Nível"
+    },
+    "footer": {
+        "developedBy": "© 2024 Triple Trouble Trivia. Desenvolvido com ❤️ por amantes de quiz."
+    },
+    "auth": {
+        "login": "Entrar",
+        "signup": "Cadastrar",
+        "email": "Email",
+        "password": "Senha",
+        "username": "Nome de Usuário",
+        "confirmPassword": "Confirmar Senha",
+        "noAccount": "Não tem uma conta?",
+        "signupNow": "Cadastre-se agora",
+        "haveAccount": "Já tem uma conta?",
+        "loginNow": "Faça login",
+        "creatingAccount": "Criando conta...",
+        "signingIn": "Entrando...",
+        "passwordsDoNotMatch": "As senhas não coincidem",
+        "passwordMinLength": "A senha deve ter pelo menos 8 caracteres",
+        "accountCreated": "Conta criada com sucesso!",
+        "signupFailed": "Falha no cadastro"
+    },
+    "home": {
+        "readyChallenge": "Pronto para o Desafio?",
+        "heroSubtitle": "Batalhe com seus amigos em tempo real e mostre quem é o verdadeiro mestre da trivia.",
+        "playNow": "JOGAR AGORA",
+        "playersOnline": "jogadores online agora",
+        "gameModes": "Modos de Jogo",
+        "viewAll": "Ver todos",
+        "classic": "Clássico",
+        "classicDesc": "10 perguntas de vários tópicos. O que importa aqui é a precisão!",
+        "survival": "Sobrevivência",
+        "survivalDesc": "Responda o máximo que puder sem errar. O tempo é seu maior inimigo.",
+        "timed": "Contra o Tempo",
+        "timedDesc": "Vença o relógio! Consiga o máximo de pontos possível em 2 minutos.",
+        "recentAchievements": "Conquistas Recentes",
+        "triviaKing": "Rei da Trivia",
+        "triviaKingDesc": "Ganhou 10 partidas seguidas",
+        "fastLearner": "Aprendiz Rápido",
+        "fastLearnerDesc": "Completou o primeiro tutorial",
+        "friends": "Amigos Online",
+        "playing": "Jogando",
+        "online": "Online",
+        "offline": "Offline"
+    },
+    "lobby": {
+        "matchmaking": "Matchmaking",
+        "searching": "Procurando oponentes...",
+        "opponentFound": "Oponente encontrado!",
+        "startingIn": "Partida começando em",
+        "cancel": "Cancelar Busca",
+        "ready": "Pronto"
+    },
+    "game": {
+        "timeRemaining": "Tempo Restante",
+        "questionOf": "Pergunta {{current}} de {{total}}",
+        "score": "Pontuação",
+        "combo": "Combo",
+        "amazing": "Incrível! Você acertou!",
+        "almost": "Quase! A resposta correta era {{answer}}.",
+        "nextQuestion": "Próxima pergunta em breve...",
+        "victory": "VITÓRIA!",
+        "dominated": "Você dominou o tabuleiro!",
+        "finalScore": "Pontuação Final",
+        "currentLevel": "Nível Atual",
+        "levelUp": "Subiu de Nível!",
+        "matchXP": "+{{xp}} XP ganhos nesta partida",
+        "rematch": "REVANCHE",
+        "backMenu": "Voltar ao Menu"
+    },
+    "ranking": {
+        "title": "Ranking Global",
+        "subtitle": "Compita com os mestres da trivia ao redor do mundo",
+        "streak": "Combo Atual",
+        "points": "Pontos"
+    },
+    "shop": {
+        "title": "Loja Triple Trouble",
+        "subtitle": "Em breve: Personalize seu avatar e compre power-ups!",
+        "premiumAvatars": "Avatares Premium",
+        "powerUps": "Power-ups",
+        "uiThemes": "Temas de Interface"
+    },
+    "profile": {
+        "myProfile": "Meu Perfil",
+        "changeAvatar": "Mudar Avatar",
+        "username": "Nome de Usuário",
+        "email": "Email",
+        "saveChanges": "Salvar Alterações",
+        "saving": "Salvando...",
+        "changePassword": "Mudar Senha",
+        "updated": "Perfil atualizado com sucesso!",
+        "updateFailed": "Falha ao atualizar perfil"
+    },
+    "friends": {
+        "title": "Amigos",
+        "searchPlaceholder": "Procurar usuários...",
+        "search": "Procurar",
+        "myFriends": "Seus Amigos",
+        "noFriends": "Você ainda não tem amigos. Procure por usuários para adicioná-los!",
+        "addFriend": "Adicionar Amigo",
+        "remove": "Remover",
+        "onlineNow": "Online agora",
+        "lastSeen": "Visto por último recentemente"
+    },
+    "notFound": {
+        "title": "404",
+        "subtitle": "Página Não Encontrada",
+        "message": "A página que você está procurando não existe ou foi movida.",
+        "goHome": "Ir para o Início"
+    }
+}
