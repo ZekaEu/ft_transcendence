@@ -28,7 +28,7 @@ Jogo de Quiz/Trivia multiplayer em tempo real, desenvolvido como projeto da 42.
 ### 1. Clonar o repositório
 
 ```bash
-gh repo clone ZekaEu/ft_transcendence
+git clone https://github.com/ZekaEu/ft_transcendence
 cd ft_transcendence
 ```
 
