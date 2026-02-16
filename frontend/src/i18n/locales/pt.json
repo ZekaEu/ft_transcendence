@@ -25,7 +25,12 @@
         "passwordsDoNotMatch": "As senhas não coincidem",
         "passwordMinLength": "A senha deve ter pelo menos 8 caracteres",
         "accountCreated": "Conta criada com sucesso!",
-        "signupFailed": "Falha no cadastro"
+        "signupFailed": "Falha no cadastro",
+        "continueWith42": "Continuar com 42",
+        "continueWithGoogle": "Continuar com Google",
+        "orContinueWith": "ou continue com email",
+        "oauthFailed": "Falha no login OAuth. Tente novamente.",
+        "success": "Login realizado com sucesso!"
     },
     "home": {
         "readyChallenge": "Pronto para o Desafio?",

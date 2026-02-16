@@ -25,7 +25,12 @@
     "passwordsDoNotMatch": "Passwords do not match",
     "passwordMinLength": "Password must be at least 8 characters",
     "accountCreated": "Account created successfully!",
-    "signupFailed": "Signup failed"
+    "signupFailed": "Signup failed",
+    "continueWith42": "Continue with 42",
+    "continueWithGoogle": "Continue with Google",
+    "orContinueWith": "or continue with email",
+    "oauthFailed": "OAuth login failed. Please try again.",
+    "success": "Login successful!"
   },
   "home": {
     "readyChallenge": "Ready for the Challenge?",

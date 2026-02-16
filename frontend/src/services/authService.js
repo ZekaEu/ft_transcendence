@@ -31,7 +31,13 @@ export const authService = {
     await apiClient.post('/auth/logout')
   },
 
-  // OAuth login
+  // Get OAuth authorization URL
+  getOAuthUrl: async (provider) => {
+    const response = await apiClient.get(`/auth/oauth/${provider}/authorize`)
+    return response.data
+  },
+
+  // OAuth login (exchange code for token via backend)
   oauthLogin: async (provider, code) => {
     const response = await apiClient.post('/auth/oauth/callback', {
       provider,

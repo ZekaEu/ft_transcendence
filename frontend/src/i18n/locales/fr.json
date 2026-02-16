@@ -15,7 +15,12 @@
     "rememberMe": "Se souvenir de moi",
     "forgotPassword": "Mot de passe oublié?",
     "noAccount": "Vous n'avez pas de compte?",
-    "haveAccount": "Vous avez déjà un compte?"
+    "haveAccount": "Vous avez déjà un compte?",
+    "continueWith42": "Continuer avec 42",
+    "continueWithGoogle": "Continuer avec Google",
+    "orContinueWith": "ou continuer avec email",
+    "oauthFailed": "Échec de la connexion OAuth. Veuillez réessayer.",
+    "success": "Connexion réussie !"
   },
   "profile": {
     "myProfile": "Mon Profil",

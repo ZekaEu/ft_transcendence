@@ -1,0 +1,107 @@
+services:
+  # ─────────────────────────────────────────
+  # MySQL Database
+  # ─────────────────────────────────────────
+  mysql:
+    image: mysql:8.0
+    container_name: trivia_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpass}
+      MYSQL_DATABASE: ${DB_NAME:-trivia_db}
+      MYSQL_USER: ${DB_USER:-trivia_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-trivia_pass}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./services/mysql/scripts/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+      - ./services/mysql/conf/my.cnf:/etc/mysql/conf.d/custom.cnf:ro
+    networks:
+      - trivia_net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-rootpass}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  # ─────────────────────────────────────────
+  # Flask Backend
+  # ─────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: trivia_backend
+    restart: unless-stopped
+    environment:
+      FLASK_ENV: ${FLASK_ENV:-production}
+      SECRET_KEY: ${SECRET_KEY:-change-me-super-secret-key}
+      DB_HOST: mysql
+      DB_PORT: "3306"
+      DB_NAME: ${DB_NAME:-trivia_db}
+      DB_USER: ${DB_USER:-trivia_user}
+      DB_PASSWORD: ${DB_PASSWORD:-trivia_pass}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-change-me-jwt-secret-key}
+      JWT_ACCESS_TOKEN_EXPIRES: ${JWT_ACCESS_TOKEN_EXPIRES:-3600}
+      JWT_REFRESH_TOKEN_EXPIRES: ${JWT_REFRESH_TOKEN_EXPIRES:-2592000}
+      OAUTH_42_CLIENT_ID: ${OAUTH_42_CLIENT_ID:-}
+      OAUTH_42_CLIENT_SECRET: ${OAUTH_42_CLIENT_SECRET:-}
+      OAUTH_42_REDIRECT_URI: ${OAUTH_42_REDIRECT_URI:-https://localhost:8443/api/auth/oauth/42/callback}
+      OAUTH_GOOGLE_CLIENT_ID: ${OAUTH_GOOGLE_CLIENT_ID:-}
+      OAUTH_GOOGLE_CLIENT_SECRET: ${OAUTH_GOOGLE_CLIENT_SECRET:-}
+      OAUTH_GOOGLE_REDIRECT_URI: ${OAUTH_GOOGLE_REDIRECT_URI:-https://localhost:8443/api/auth/oauth/google/callback}
+      FRONTEND_URL: ${FRONTEND_URL:-https://localhost:8443}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - trivia_net
+
+  # ─────────────────────────────────────────
+  # React Frontend (build only)
+  # ─────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-https://localhost:8443/api}
+        VITE_SOCKET_URL: ${VITE_SOCKET_URL:-https://localhost:8443}
+    container_name: trivia_frontend
+    restart: "no"
+    volumes:
+      - frontend_dist:/usr/share/nginx/html
+    networks:
+      - trivia_net
+
+  # ─────────────────────────────────────────
+  # NGINX Reverse Proxy (SSL termination)
+  # ─────────────────────────────────────────
+  nginx:
+    build:
+      context: ./services/nginx
+      dockerfile: Dockerfile
+    container_name: trivia_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "8443:8443"
+    volumes:
+      - frontend_dist:/usr/share/nginx/html:ro
+      - nginx_ssl:/etc/nginx/ssl
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - trivia_net
+
+volumes:
+  mysql_data:
+  frontend_dist:
+  nginx_ssl:
+
+networks:
+  trivia_net:
+    driver: bridge

@@ -76,6 +76,27 @@ export function AuthProvider({ children }) {
     }
   }
 
+  const loginWithToken = async (token, refreshToken) => {
+    setLoading(true)
+    setError(null)
+    try {
+      localStorage.setItem('authToken', token)
+      if (refreshToken) {
+        localStorage.setItem('refreshToken', refreshToken)
+      }
+      const userData = await API.getCurrentUser()
+      setUser(userData)
+      return userData
+    } catch (err) {
+      localStorage.removeItem('authToken')
+      localStorage.removeItem('refreshToken')
+      setError(err.message)
+      throw err
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const updateUser = (updatedUserData) => {
     setUser((prev) => ({ ...prev, ...updatedUserData }))
   }
@@ -87,6 +108,7 @@ export function AuthProvider({ children }) {
     login,
     signup,
     logout,
+    loginWithToken,
     updateUser,
   }
 
