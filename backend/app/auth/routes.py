@@ -621,3 +621,32 @@ def oauth_callback_from_frontend():
         }), 200
 
     return jsonify({'message': f'Unsupported provider: {provider}'}), 400
+
+
+# ──────────────────────────────────────────────
+# Search users
+# ──────────────────────────────────────────────
+@auth_bp.route('/users/search', methods=['GET'])
+@jwt_required()
+def search_users():
+    query = request.args.get('q', '').strip()
+    if not query or len(query) < 2:
+        return jsonify([]), 200
+
+    current_user_id = int(get_jwt_identity())
+    users = (
+        User.query
+        .filter(
+            User.id != current_user_id,
+            User.is_active == True,
+            db.or_(
+                User.username.ilike(f'%{query}%'),
+                User.display_name.ilike(f'%{query}%'),
+                User.email.ilike(f'%{query}%'),
+            ),
+        )
+        .limit(20)
+        .all()
+    )
+
+    return jsonify([u.to_dict() for u in users]), 200

@@ -21,9 +21,13 @@ def create_app(config_class=Config):
     from app.auth import auth_bp
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
 
+    from app.chat import chat_bp
+    app.register_blueprint(chat_bp, url_prefix='/api/chat')
+
     # ── Database tables ─────────────────────
     with app.app_context():
         from app.auth import models  # noqa: F401
+        from app.chat import models as chat_models  # noqa: F401
         db.create_all()
 
     # ── JWT error handlers ──────────────────

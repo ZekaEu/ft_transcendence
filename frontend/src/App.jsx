@@ -2,6 +2,7 @@ import React from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from './context/AuthContext'
+import { ChatProvider } from './context/ChatContext'
 import { MainLayout } from './components/layout'
 import ProtectedRoute from './components/common/ProtectedRoute'
 
@@ -15,12 +16,14 @@ import GamePage from './pages/GamePage'
 import LeaderboardPage from './pages/LeaderboardPage'
 import LobbyPage from './pages/LobbyPage'
 import ShopPage from './pages/ShopPage'
+import ChatPage from './pages/ChatPage'
 import NotFoundPage from './pages/NotFoundPage'
 
 function App() {
   return (
     <Router>
       <AuthProvider>
+        <ChatProvider>
         <Routes>
           {/* Public Routes */}
           <Route path="/login" element={<LoginPage />} />
@@ -98,9 +101,21 @@ function App() {
             }
           />
 
+          <Route
+            path="/chat"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <ChatPage />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+
           {/* 404 */}
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
+        </ChatProvider>
 
         {/* Toast notifications */}
         <Toaster

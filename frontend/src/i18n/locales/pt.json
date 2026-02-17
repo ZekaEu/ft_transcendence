@@ -1,6 +1,7 @@
 {
     "navbar": {
         "home": "Início",
+        "chat": "Chat",
         "ranking": "Ranking",
         "shop": "Loja",
         "profile": "Perfil",
@@ -120,5 +121,32 @@
         "subtitle": "Página Não Encontrada",
         "message": "A página que você está procurando não existe ou foi movida.",
         "goHome": "Ir para o Início"
+    },
+    "chat": {
+        "title": "Mensagens",
+        "loading": "Carregando...",
+        "noRooms": "Nenhuma conversa ainda. Comece a conversar com alguém!",
+        "noMessages": "Nenhuma mensagem ainda",
+        "group": "Grupo",
+        "directMessage": "Mensagem Direta",
+        "you": "Você",
+        "today": "Hoje",
+        "yesterday": "Ontem",
+        "startConversation": "Inicie uma conversa",
+        "isTyping": "está digitando...",
+        "typeMessage": "Digite uma mensagem...",
+        "selectRoom": "Selecione uma conversa",
+        "selectRoomHint": "Escolha um chat na barra lateral para começar a conversar",
+        "members": "membros",
+        "online": "Online",
+        "offline": "Offline",
+        "newChat": "Novo Chat",
+        "newGroup": "Novo Grupo",
+        "searchUsers": "Buscar usuários...",
+        "searchHint": "Digite pelo menos 2 caracteres para buscar",
+        "searching": "Buscando...",
+        "noUsersFound": "Nenhum usuário encontrado",
+        "groupNamePlaceholder": "Nome do grupo",
+        "createGroup": "Criar Grupo"
     }
 }

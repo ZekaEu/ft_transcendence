@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate, Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../hooks/useAuth'
+import { useChat } from '../../hooks/useChat'
 import { Avatar } from './Avatar'
 
 export function Navbar() {
   const { t, i18n } = useTranslation()
   const { user, logout } = useAuth()
+  const { totalUnread } = useChat()
   const navigate = useNavigate()
   const location = useLocation()
   const [isDark, setIsDark] = useState(document.documentElement.classList.contains('dark'))
@@ -36,6 +38,7 @@ export function Navbar() {
 
   const navLinks = [
     { name: t('navbar.home'), path: '/' },
+    { name: t('navbar.chat'), path: '/chat', badge: totalUnread },
     { name: t('navbar.ranking'), path: '/ranking' },
     { name: t('navbar.shop'), path: '/shop' },
     { name: t('navbar.profile'), path: '/profile' },
@@ -60,12 +63,17 @@ export function Navbar() {
             <Link
               key={link.path}
               to={link.path}
-              className={`transition-colors ${location.pathname === link.path
+              className={`relative transition-colors ${location.pathname === link.path
                 ? 'text-primary-500 border-b-2 border-primary-500 pb-1'
                 : 'text-slate-600 dark:text-slate-300 hover:text-primary-500'
                 }`}
             >
               {link.name}
+              {link.badge > 0 && (
+                <span className="absolute -top-2 -right-4 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                  {link.badge > 9 ? '9+' : link.badge}
+                </span>
+              )}
             </Link>
           ))}
         </div>

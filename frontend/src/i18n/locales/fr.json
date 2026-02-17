@@ -46,5 +46,32 @@
     "edit": "Modifier",
     "save": "Enregistrer",
     "search": "Rechercher"
+  },
+  "chat": {
+    "title": "Messages",
+    "loading": "Chargement...",
+    "noRooms": "Aucune conversation pour l'instant. Commencez à discuter !",
+    "noMessages": "Aucun message",
+    "group": "Groupe",
+    "directMessage": "Message Direct",
+    "you": "Vous",
+    "today": "Aujourd'hui",
+    "yesterday": "Hier",
+    "startConversation": "Démarrer une conversation",
+    "isTyping": "est en train d'écrire...",
+    "typeMessage": "Écrivez un message...",
+    "selectRoom": "Sélectionnez une conversation",
+    "selectRoomHint": "Choisissez un chat dans la barre latérale pour commencer",
+    "members": "membres",
+    "online": "En ligne",
+    "offline": "Hors ligne",
+    "newChat": "Nouveau Chat",
+    "newGroup": "Nouveau Groupe",
+    "searchUsers": "Rechercher des utilisateurs...",
+    "searchHint": "Tapez au moins 2 caractères pour rechercher",
+    "searching": "Recherche...",
+    "noUsersFound": "Aucun utilisateur trouvé",
+    "groupNamePlaceholder": "Nom du groupe",
+    "createGroup": "Créer le Groupe"
   }
 }
