@@ -77,8 +77,8 @@ export function ChatMessages() {
 					>
 						<div
 							className={`max-w-[75%] px-3 py-2 rounded-2xl ${isOwn
-									? 'bg-primary-500 text-white rounded-br-md'
-									: 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-bl-md'
+								? 'bg-primary-500 text-white rounded-br-md'
+								: 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-bl-md'
 								}`}
 						>
 							{!isOwn && activeRoom?.is_group && (

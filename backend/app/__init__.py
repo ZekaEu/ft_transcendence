@@ -24,10 +24,14 @@ def create_app(config_class=Config):
     from app.chat import chat_bp
     app.register_blueprint(chat_bp, url_prefix='/api/chat')
 
+    from app.game import game_bp
+    app.register_blueprint(game_bp, url_prefix='/api/game')
+
     # ── Database tables ─────────────────────
     with app.app_context():
         from app.auth import models  # noqa: F401
         from app.chat import models as chat_models  # noqa: F401
+        from app.game import models as game_models  # noqa: F401
         db.create_all()
 
     # ── JWT error handlers ──────────────────
