@@ -21,9 +21,17 @@ def create_app(config_class=Config):
     from app.auth import auth_bp
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
 
+    from app.chat import chat_bp
+    app.register_blueprint(chat_bp, url_prefix='/api/chat')
+
+    from app.game import game_bp
+    app.register_blueprint(game_bp, url_prefix='/api/game')
+
     # ── Database tables ─────────────────────
     with app.app_context():
         from app.auth import models  # noqa: F401
+        from app.chat import models as chat_models  # noqa: F401
+        from app.game import models as game_models  # noqa: F401
         db.create_all()
 
     # ── JWT error handlers ──────────────────
@@ -47,5 +55,12 @@ def create_app(config_class=Config):
     @app.route('/api/health')
     def health_check():
         return {'status': 'ok'}, 200
+
+    # ── Online users count ──────────────────
+    @app.route('/api/stats/online')
+    def online_count():
+        from app.auth.models import User
+        count = User.query.filter_by(is_online=True, is_active=True).count()
+        return {'online_count': count}, 200
 
     return app

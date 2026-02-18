@@ -1,11 +1,27 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../hooks/useAuth'
+import apiClient from '../services/apiClient'
 
 function HomePage() {
   const { t } = useTranslation()
   const { user } = useAuth()
+  const [onlineCount, setOnlineCount] = useState(0)
+
+  useEffect(() => {
+    const fetchOnline = async () => {
+      try {
+        const res = await apiClient.get('/stats/online')
+        setOnlineCount(res.data.online_count)
+      } catch (err) {
+        console.error('Failed to fetch online count:', err)
+      }
+    }
+    fetchOnline()
+    const interval = setInterval(fetchOnline, 30000)
+    return () => clearInterval(interval)
+  }, [])
 
   return (
     <div className="space-y-16 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -33,7 +49,7 @@ function HomePage() {
           </Link>
           <div className="mt-6 flex items-center gap-2 text-slate-400 dark:text-slate-500">
             <span className="material-icons-round text-sm">group</span>
-            <span className="text-sm font-semibold">1,248 {t('home.playersOnline')}</span>
+            <span className="text-sm font-semibold">{onlineCount.toLocaleString()} {t('home.playersOnline')}</span>
           </div>
         </div>
       </section>
