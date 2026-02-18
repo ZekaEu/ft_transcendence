@@ -52,4 +52,11 @@ def create_app(config_class=Config):
     def health_check():
         return {'status': 'ok'}, 200
 
+    # ── Online users count ──────────────────
+    @app.route('/api/stats/online')
+    def online_count():
+        from app.auth.models import User
+        count = User.query.filter_by(is_online=True, is_active=True).count()
+        return {'online_count': count}, 200
+
     return app
