@@ -41,6 +41,9 @@ def handle_connect(auth=None):
         for room in user.chat_rooms:
             join_room(f'room_{room.id}')
 
+        # Join personal channel for notifications (new room invites, etc.)
+        join_room(f'user_{user_id}')
+
         emit('connected', {'user_id': user.id, 'username': user.username})
     except Exception:
         return False

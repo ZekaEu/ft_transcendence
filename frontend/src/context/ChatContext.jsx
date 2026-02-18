@@ -77,10 +77,22 @@ export function ChatProvider({ children }) {
 			console.error('[chat] socket error:', err)
 		})
 
+		// When a new room is created that we're part of, auto-join and add to list
+		chatService.onRoomCreated((roomData) => {
+			if (token) {
+				chatService.joinRoom(roomData.id, token)
+			}
+			setRooms((prev) => {
+				if (prev.find((r) => r.id === roomData.id)) return prev
+				return [roomData, ...prev]
+			})
+		})
+
 		return () => {
 			chatService.offNewMessage()
 			chatService.offUserTyping()
 			chatService.offMessagesRead()
+			chatService.offRoomCreated()
 			chatService.offError()
 			chatService.disconnectSocket()
 			socketReady.current = false

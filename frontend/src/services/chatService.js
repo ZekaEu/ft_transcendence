@@ -120,6 +120,10 @@ export const chatService = {
     chatSocket?.on('joined_room', callback)
   },
 
+  onRoomCreated: (callback) => {
+    chatSocket?.on('room_created', callback)
+  },
+
   onError: (callback) => {
     chatSocket?.on('error', callback)
   },
@@ -129,5 +133,6 @@ export const chatService = {
   offUserTyping: () => chatSocket?.off('user_typing'),
   offMessagesRead: () => chatSocket?.off('messages_read'),
   offJoinedRoom: () => chatSocket?.off('joined_room'),
+  offRoomCreated: () => chatSocket?.off('room_created'),
   offError: () => chatSocket?.off('error'),
 }

@@ -2,7 +2,7 @@ from flask import request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from app.chat import chat_bp
-from app.core.extensions import db
+from app.core.extensions import db, socketio
 from app.auth.models import User
 from app.chat.models import ChatRoom, ChatMessage, chat_room_members
 
@@ -94,7 +94,14 @@ def create_room():
     db.session.add(room)
     db.session.commit()
 
-    return jsonify(room.to_dict()), 201
+    # Notify all members via their personal socket channel
+    # so their clients auto-join the new room
+    room_data = room.to_dict()
+    for member in members:
+        socketio.emit('room_created', room_data,
+                      room=f'user_{member.id}', namespace='/chat')
+
+    return jsonify(room_data), 201
 
 
 # ──────────────────────────────────────────────
