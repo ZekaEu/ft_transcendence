@@ -30,7 +30,7 @@ export default function ChatPage() {
 						className="p-2 rounded-xl bg-primary-500 hover:bg-primary-600 text-white transition-colors shadow-md hover:shadow-lg"
 						title={t('chat.newChat')}
 					>
-						<span className="material-icons-round text-lg"></span>
+						<span className="material-icons-round text-lg">edit</span>
 					</button>
 				</div>
 

@@ -89,6 +89,7 @@
         "cancel": "Cancelar Busca"
     },
     "game": {
+        "loading": "Carregando jogo...",
         "timeRemaining": "Tempo Restante",
         "questionOf": "Pergunta {{current}} de {{total}}",
         "score": "Pontuação",
@@ -96,13 +97,12 @@
         "amazing": "Incrível! Você acertou!",
         "almost": "Quase! A resposta correta era {{answer}}.",
         "nextQuestion": "Próxima pergunta em breve...",
-        "victory": "VITÓRIA!",
-        "dominated": "Você dominou o tabuleiro!",
+        "gameOver": "FIM DE JOGO",
+        "finalRanking": "Ranking Final",
         "finalScore": "Pontuação Final",
-        "currentLevel": "Nível Atual",
-        "levelUp": "Subiu de Nível!",
-        "matchXP": "+{{xp}} XP ganhos nesta partida",
-        "rematch": "REVANCHE",
+        "yourRank": "Sua Posição",
+        "you": "você",
+        "playAgain": "JOGAR NOVAMENTE",
         "backMenu": "Voltar ao Menu"
     },
     "ranking": {

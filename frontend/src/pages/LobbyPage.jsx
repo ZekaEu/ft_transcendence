@@ -90,7 +90,6 @@ function LobbyPage() {
             gameService.offRoomUpdated()
             gameService.offGameStart()
             gameService.offError()
-            gameService.disconnectSocket()
         }
     }, [navigate, t])
 

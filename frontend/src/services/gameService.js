@@ -101,6 +101,19 @@ export const gameService = {
     gameSocket?.emit('game_started', { room_id: roomId })
   },
 
+  submitAnswer: (roomId, answer, timeRemaining, token) => {
+    gameSocket?.emit('submit_answer', {
+      room_id: roomId,
+      answer,
+      time_remaining: timeRemaining,
+      token,
+    })
+  },
+
+  emitTimeExpired: (roomId, token) => {
+    gameSocket?.emit('time_expired', { room_id: roomId, token })
+  },
+
   // ── Event listeners ─────────────────────
   onPlayerJoined: (callback) => {
     gameSocket?.on('player_joined', callback)
@@ -114,6 +127,22 @@ export const gameService = {
     gameSocket?.on('game_start', callback)
   },
 
+  onNewQuestion: (callback) => {
+    gameSocket?.on('new_question', callback)
+  },
+
+  onAnswerResult: (callback) => {
+    gameSocket?.on('answer_result', callback)
+  },
+
+  onScoreboardUpdate: (callback) => {
+    gameSocket?.on('scoreboard_update', callback)
+  },
+
+  onGameFinished: (callback) => {
+    gameSocket?.on('game_finished', callback)
+  },
+
   onError: (callback) => {
     gameSocket?.on('error', callback)
   },
@@ -122,5 +151,9 @@ export const gameService = {
   offPlayerJoined: () => gameSocket?.off('player_joined'),
   offRoomUpdated: () => gameSocket?.off('room_updated'),
   offGameStart: () => gameSocket?.off('game_start'),
+  offNewQuestion: () => gameSocket?.off('new_question'),
+  offAnswerResult: () => gameSocket?.off('answer_result'),
+  offScoreboardUpdate: () => gameSocket?.off('scoreboard_update'),
+  offGameFinished: () => gameSocket?.off('game_finished'),
   offError: () => gameSocket?.off('error'),
 }

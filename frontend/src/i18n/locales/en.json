@@ -89,6 +89,7 @@
     "cancel": "Cancel Search"
   },
   "game": {
+    "loading": "Loading game...",
     "timeRemaining": "Time Remaining",
     "questionOf": "Question {{current}} of {{total}}",
     "score": "Score",
@@ -96,13 +97,12 @@
     "amazing": "Amazing! You got it right!",
     "almost": "Almost! The correct answer was {{answer}}.",
     "nextQuestion": "Next question coming soon...",
-    "victory": "VICTORY!",
-    "dominated": "You dominated the board!",
+    "gameOver": "GAME OVER",
+    "finalRanking": "Final Ranking",
     "finalScore": "Final Score",
-    "currentLevel": "Current Level",
-    "levelUp": "Level Up!",
-    "matchXP": "+{{xp}} XP earned this match",
-    "rematch": "REMATCH",
+    "yourRank": "Your Rank",
+    "you": "you",
+    "playAgain": "PLAY AGAIN",
     "backMenu": "Back to Menu"
   },
   "ranking": {

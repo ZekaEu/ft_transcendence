@@ -163,6 +163,7 @@ CREATE TABLE IF NOT EXISTS game_room_players (
     room_id     INT             NOT NULL,
     user_id     INT             NOT NULL,
     is_ready    BOOLEAN         NOT NULL DEFAULT FALSE,
+    score       INT             NOT NULL DEFAULT 0,
     joined_at   DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_grp_room

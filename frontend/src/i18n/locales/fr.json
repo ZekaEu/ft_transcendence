@@ -74,6 +74,23 @@
     "groupNamePlaceholder": "Nom du groupe",
     "createGroup": "Créer le Groupe"
   },
+  "game": {
+    "loading": "Chargement du jeu...",
+    "timeRemaining": "Temps Restant",
+    "questionOf": "Question {{current}} sur {{total}}",
+    "score": "Score",
+    "combo": "Combo",
+    "amazing": "Bravo!",
+    "almost": "Presque! La bonne réponse était {{answer}}.",
+    "nextQuestion": "Prochaine question bientôt...",
+    "gameOver": "FIN DE PARTIE",
+    "finalRanking": "Classement Final",
+    "finalScore": "Score Final",
+    "yourRank": "Votre Rang",
+    "you": "vous",
+    "playAgain": "REJOUER",
+    "backMenu": "Retour au Menu"
+  },
   "lobby": {
     "title": "Salles de Jeu",
     "subtitle": "Rejoignez une salle ou créez votre propre partie",
