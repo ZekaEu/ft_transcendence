@@ -12,7 +12,7 @@ services:
       MYSQL_USER: ${DB_USER:-trivia_user}
       MYSQL_PASSWORD: ${DB_PASSWORD:-trivia_pass}
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
       - ./services/mysql/scripts/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
@@ -86,7 +86,7 @@ services:
     container_name: trivia_nginx
     restart: unless-stopped
     ports:
-      - "80:80"
+      - "8080:80"
       - "8443:8443"
     volumes:
       - frontend_dist:/usr/share/nginx/html:ro
