@@ -29,7 +29,7 @@ function HomePage() {
       <section className="text-center space-y-8">
         <div className="space-y-4">
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight">
-            {t('home.readyChallenge').split('Challenge?')[0]} <span className="text-gradient">Challenge?</span>
+            {t('home.readyFor')} <span className="text-gradient">{t('home.challenge')}</span>
           </h1>
           <p className="text-lg text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
             {t('home.heroSubtitle')}

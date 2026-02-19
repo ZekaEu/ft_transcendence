@@ -8,7 +8,7 @@
         "level": "Nível"
     },
     "footer": {
-        "developedBy": "© 2024 Triple Trouble Trivia. Desenvolvido com ❤️ por amantes de quiz."
+        "developedBy": "© 2026 Triple Trouble Trivia. Desenvolvido para o projeto ft_transcendence da 42."
     },
     "auth": {
         "login": "Entrar",
@@ -34,7 +34,8 @@
         "success": "Login realizado com sucesso!"
     },
     "home": {
-        "readyChallenge": "Pronto para o Desafio?",
+        "readyFor": "Pronto para o ",
+        "challenge": "Desafio?",
         "heroSubtitle": "Batalhe com seus amigos em tempo real e mostre quem é o verdadeiro mestre da trivia.",
         "playNow": "JOGAR AGORA",
         "playersOnline": "jogadores online agora",
