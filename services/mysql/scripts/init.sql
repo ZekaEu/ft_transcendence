@@ -138,13 +138,16 @@ CREATE TABLE IF NOT EXISTS chat_messages (
 -- Game rooms
 -- ─────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS game_rooms (
-    id          INT AUTO_INCREMENT PRIMARY KEY,
-    name        VARCHAR(128)    NOT NULL,
-    host_id     INT             NOT NULL,
-    game_mode   VARCHAR(32)     NOT NULL DEFAULT 'classic',
-    max_players INT             NOT NULL DEFAULT 4,
-    status      VARCHAR(20)     NOT NULL DEFAULT 'waiting',
-    created_at  DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    id                  INT AUTO_INCREMENT PRIMARY KEY,
+    name                VARCHAR(128)    NOT NULL,
+    host_id             INT             NOT NULL,
+    game_mode           VARCHAR(32)     NOT NULL DEFAULT 'classic',
+    max_players         INT             NOT NULL DEFAULT 4,
+    status              VARCHAR(20)     NOT NULL DEFAULT 'waiting',
+    question_category   VARCHAR(32)     NOT NULL DEFAULT 'any',
+    question_difficulty VARCHAR(16)     NOT NULL DEFAULT 'any',
+    question_language   VARCHAR(8)      NOT NULL DEFAULT 'any',
+    created_at          DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_gameroom_host
         FOREIGN KEY (host_id) REFERENCES users(id)

@@ -192,6 +192,18 @@ function GamePage() {
                     <h2 className="text-3xl md:text-4xl font-extrabold leading-tight text-slate-800 dark:text-white">
                         {question.question}
                     </h2>
+
+                    {/* Kahoot question image */}
+                    {question.image && (
+                        <div className="mt-6 flex justify-center">
+                            <img
+                                src={question.image}
+                                alt=""
+                                className="max-h-64 max-w-full rounded-xl object-contain shadow-lg border border-white/10"
+                                onError={(e) => { e.target.style.display = 'none' }}
+                            />
+                        </div>
+                    )}
                 </div>
             )}
 

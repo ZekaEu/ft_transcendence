@@ -3,8 +3,23 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from app.game import game_bp
 from app.core.extensions import db, socketio
-from app.auth.models import User
-from app.game.models import GameRoom, GameRoomPlayer
+from app.game.models import GameRoom, GameRoomPlayer, KAHOOT_CATEGORIES, KAHOOT_LANGUAGES, VALID_DIFFICULTIES
+
+
+# ──────────────────────────────────────────────
+# Available Kahoot trivia categories, difficulties & languages
+# ──────────────────────────────────────────────
+@game_bp.route('/trivia/categories', methods=['GET'])
+@jwt_required()
+def trivia_categories():
+    categories = [
+        {'key': k, 'label': k.replace('_', ' ').title()} for k in KAHOOT_CATEGORIES.keys()
+    ]
+    difficulties = list(VALID_DIFFICULTIES)
+    languages = [
+        {'key': k, 'label': v or 'Any'} for k, v in KAHOOT_LANGUAGES.items()
+    ]
+    return jsonify({'categories': categories, 'difficulties': difficulties, 'languages': languages}), 200
 
 
 # ──────────────────────────────────────────────
@@ -54,12 +69,24 @@ def create_room():
     name = (data.get('name') or '').strip()
     game_mode = data.get('game_mode', 'classic')
     max_players = data.get('max_players', 4)
+    question_category = data.get('question_category', 'any')
+    question_difficulty = data.get('question_difficulty', 'any')
+    question_language = data.get('question_language', 'any')
 
     if not name:
         return jsonify({'message': 'Room name is required'}), 400
 
     if game_mode not in ('classic', 'survival', 'timed'):
         return jsonify({'message': 'Invalid game mode'}), 400
+
+    if question_category not in KAHOOT_CATEGORIES:
+        return jsonify({'message': 'Invalid question category'}), 400
+
+    if question_difficulty not in VALID_DIFFICULTIES:
+        return jsonify({'message': 'Invalid question difficulty'}), 400
+
+    if question_language not in KAHOOT_LANGUAGES:
+        return jsonify({'message': 'Invalid question language'}), 400
 
     max_players = min(max(int(max_players), 2), 8)
 
@@ -78,6 +105,9 @@ def create_room():
         host_id=user_id,
         game_mode=game_mode,
         max_players=max_players,
+        question_category=question_category,
+        question_difficulty=question_difficulty,
+        question_language=question_language,
     )
     db.session.add(room)
     db.session.flush()
