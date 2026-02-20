@@ -301,6 +301,10 @@ Qualquer módulo pode importar `db`, `jwt`, etc. sem importar o `app` diretament
 | `OAUTH_GOOGLE_CLIENT_ID` | — | Client ID Google |
 | `OAUTH_GOOGLE_CLIENT_SECRET` | — | Client Secret Google |
 | `OAUTH_GOOGLE_REDIRECT_URI` | `https://localhost:8443/api/auth/oauth/google/callback` | Callback URL Google |
+| `FREEFORM_AI_PROVIDER` | `openai` | Provedor de IA para o modo FreeForm (`openai` ou `mock`) |
+| `FREEFORM_AI_MODEL` | `gpt-5-mini` | Modelo de IA usado no FreeForm |
+| `OPENAI_API_KEY` | — | Chave da API OpenAI |
+| `OPENAI_BASE_URL` | `https://api.openai.com/v1` | Base URL da API OpenAI |
 | `FRONTEND_URL` | `https://localhost:8443` | URL do frontend |
 
 > 💡 Gerar chaves seguras: `python3 -c "import secrets; print(secrets.token_hex(32))"`

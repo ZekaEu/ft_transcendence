@@ -52,5 +52,11 @@ class Config:
     OAUTH_GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token'
     OAUTH_GOOGLE_USERINFO_URL = 'https://www.googleapis.com/oauth2/v2/userinfo'
 
+    # AI (FreeForm)
+    FREEFORM_AI_PROVIDER = os.getenv('FREEFORM_AI_PROVIDER', 'openai')
+    FREEFORM_AI_MODEL = os.getenv('FREEFORM_AI_MODEL', 'gpt-5-mini')
+    OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
+    OPENAI_BASE_URL = os.getenv('OPENAI_BASE_URL', 'https://api.openai.com/v1')
+
     # Frontend
     FRONTEND_URL = os.getenv('FRONTEND_URL', 'https://localhost:8443')
