@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react'
 import { authService } from '../services/authService'
+import { userService } from '../services/userService'
 import { mockAuthService } from '../services/mockAuthService'
 
 // Use mock API if VITE_USE_MOCK_API is true
@@ -97,6 +98,20 @@ export function AuthProvider({ children }) {
     }
   }
 
+  // Fetch fresh user data from server
+  const refreshUserData = async () => {
+    if (!user) return
+    try {
+      const freshUserData = await userService.getUserProfile(user.id)
+      setUser(freshUserData)
+      return freshUserData
+    } catch (err) {
+      console.error('Failed to refresh user data:', err)
+      throw err
+    }
+  }
+
+  // Update user in context (local state only)
   const updateUser = (updatedUserData) => {
     setUser((prev) => ({ ...prev, ...updatedUserData }))
   }
@@ -110,6 +125,7 @@ export function AuthProvider({ children }) {
     logout,
     loginWithToken,
     updateUser,
+    refreshUserData,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
