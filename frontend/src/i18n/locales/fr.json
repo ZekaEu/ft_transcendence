@@ -25,8 +25,21 @@
   "profile": {
     "myProfile": "Mon Profil",
     "changeAvatar": "Changer l'avatar",
+    "username": "Nom d'utilisateur",
+    "email": "Email",
+    "displayName": "Nom d'affichage",
+    "bio": "Biographie",
+    "bioPlaceholder": "Parlez-nous de vous...",
+    "selectFile": "Sélectionner un fichier",
+    "removeAvatar": "Supprimer l'avatar",
     "saveChanges": "Enregistrer les modifications",
-    "changePassword": "Changer le mot de passe"
+    "saving": "Enregistrement...",
+    "changePassword": "Changer le mot de passe",
+    "updated": "Profil mis à jour avec succès !",
+    "updateFailed": "Échec de la mise à jour du profil",
+    "invalidFileType": "Type de fichier invalide. Veuillez télécharger une image.",
+    "fileTooLarge": "Le fichier est trop volumineux. Taille maximale : 5MB",
+    "uploadingAvatar": "Téléchargement de l'avatar..."
   },
   "friends": {
     "myFriends": "Mes Amis",

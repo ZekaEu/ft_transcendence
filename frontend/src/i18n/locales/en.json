@@ -124,11 +124,19 @@
     "changeAvatar": "Change Avatar",
     "username": "Username",
     "email": "Email",
+    "displayName": "Display Name",
+    "bio": "Bio",
+    "bioPlaceholder": "Tell us about yourself...",
+    "selectFile": "Select File",
+    "removeAvatar": "Remove Avatar",
     "saveChanges": "Save Changes",
     "saving": "Saving...",
     "changePassword": "Change Password",
     "updated": "Profile updated successfully!",
-    "updateFailed": "Failed to update profile"
+    "updateFailed": "Failed to update profile",
+    "invalidFileType": "Invalid file type. Please upload an image.",
+    "fileTooLarge": "File is too large. Maximum size: 5MB",
+    "uploadingAvatar": "Uploading avatar..."
   },
   "friends": {
     "title": "Friends",
