@@ -153,8 +153,8 @@ function GamePage() {
                 setLastResult({ correct: false, correct_answer: question?.answer, points: 0, total_score: myScore })
                 setStreak(0)
                 setPhase('feedback')
-                // Host reports time expiry
-                if (room && user && room.host_id === user.id) {
+                // Any player can report time expiry (server guards against duplicates)
+                if (room) {
                     const token = localStorage.getItem('authToken')
                     gameService.emitTimeExpired(room.id, token)
                 }

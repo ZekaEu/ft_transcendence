@@ -130,9 +130,14 @@ function MemoryGamePage() {
         })
 
         memoryService.onTurnChange((data) => {
-            setCurrentTurn(data.current_turn)
+            setCurrentTurn((prev) => {
+                // Only reset powerup usage when the turn actually changes to a different player
+                if (prev !== data.current_turn) {
+                    setUsedThisTurn({})
+                }
+                return data.current_turn
+            })
             setScoreboard(data.scores)
-            setUsedThisTurn({})
             setPeekCards({})
             setRevealedPair({})
         })

@@ -389,9 +389,9 @@ function ProfilePage() {
           </div>
         ) : (
           <div className="space-y-3">
-            {matches.map((match) => (
+            {matches.map((match, idx) => (
               <div
-                key={match.room_id}
+                key={`${match.game_type}_${match.room_id}_${idx}`}
                 className={`flex items-center justify-between p-4 rounded-xl border transition-colors ${
                   match.is_winner
                     ? 'border-green-200 bg-green-50/50'
