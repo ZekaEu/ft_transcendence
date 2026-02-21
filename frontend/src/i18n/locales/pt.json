@@ -5,7 +5,8 @@
         "ranking": "Ranking",
         "shop": "Loja",
         "profile": "Perfil",
-        "level": "XP"
+        "level": "XP",
+        "friends": "Amigos"
     },
     "footer": {
         "developedBy": "© 2026 Triple Trouble Trivia. Desenvolvido para o projeto ft_transcendence da 42."
@@ -87,7 +88,8 @@
         "startGame": "Iniciar Jogo",
         "startFailed": "Falha ao iniciar o jogo",
         "gameStarting": "O jogo está começando!",
-        "cancel": "Cancelar Busca"
+        "cancel": "Cancelar Busca",
+        "friendsOnly": "Apenas Amigos"
     },
     "game": {
         "loading": "Carregando jogo...",
@@ -133,7 +135,23 @@
         "saving": "Salvando...",
         "changePassword": "Mudar Senha",
         "updated": "Perfil atualizado com sucesso!",
-        "updateFailed": "Falha ao atualizar o perfil",
+        "updateFailed": "Falha ao atualizar perfil",
+        "matchHistory": "Histórico de Partidas",
+        "allMatches": "Todas",
+        "wins": "Vitórias",
+        "losses": "Derrotas",
+        "totalGames": "Total de Jogos",
+        "winRate": "Taxa de Vitória",
+        "noMatches": "Nenhuma partida encontrada",
+        "playFirst": "Jogue algumas partidas para ver seu histórico aqui!",
+        "rank": "Posição",
+        "score": "Pontuação",
+        "players": "Jogadores",
+        "winner": "Vencedor",
+        "victory": "Vitória",
+        "defeat": "Derrota",
+        "mode": "Modo",
+        "loadingHistory": "Carregando histórico...",
         "invalidFileType": "Tipo de arquivo inválido. Por favor, faça upload de uma imagem.",
         "fileTooLarge": "Arquivo muito grande. Tamanho máximo: 5MB",
         "uploadingAvatar": "Enviando avatar..."
@@ -147,7 +165,30 @@
         "addFriend": "Adicionar Amigo",
         "remove": "Remover",
         "onlineNow": "Online agora",
-        "lastSeen": "Visto por último recentemente"
+        "lastSeen": "Visto por último recentemente",
+        "online": "Online",
+        "offline": "Offline",
+        "findFriends": "Encontrar Amigos",
+        "pendingRequests": "Pedidos Pendentes",
+        "receivedRequests": "Pedidos Recebidos",
+        "sentRequests": "Pedidos Enviados",
+        "pendingCount": "pendentes",
+        "pendingRequest": "Pedido Pendente",
+        "noPending": "Nenhum pedido pendente",
+        "noSent": "Nenhum pedido enviado",
+        "noResults": "Nenhum usuário encontrado",
+        "accept": "Aceitar",
+        "reject": "Rejeitar",
+        "cancel": "Cancelar",
+        "requestSent": "Pedido de amizade enviado!",
+        "requestFailed": "Falha ao enviar pedido",
+        "requestAccepted": "Pedido de amizade aceito!",
+        "requestRejected": "Pedido rejeitado",
+        "requestCancelled": "Pedido cancelado",
+        "friendRemoved": "Amigo removido",
+        "actionFailed": "Ação falhou",
+        "searchFailed": "Busca falhou",
+        "alreadyFriends": "Já são Amigos"
     },
     "notFound": {
         "title": "404",

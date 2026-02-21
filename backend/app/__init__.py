@@ -31,6 +31,9 @@ def create_app(config_class=Config):
     from app.game import game_bp
     app.register_blueprint(game_bp, url_prefix='/api/game')
 
+    from app.friends import friends_bp
+    app.register_blueprint(friends_bp, url_prefix='/api/friends')
+
     # ── Static files (uploads) ───────────────
     upload_folder = app.config['UPLOAD_FOLDER']
     os.makedirs(upload_folder, exist_ok=True)
@@ -48,6 +51,7 @@ def create_app(config_class=Config):
         from app.auth import models  # noqa: F401
         from app.chat import models as chat_models  # noqa: F401
         from app.game import models as game_models  # noqa: F401
+        from app.friends import models as friends_models  # noqa: F401
         db.create_all()
 
     # ── JWT error handlers ──────────────────

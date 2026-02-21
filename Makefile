@@ -4,7 +4,7 @@
 
 NAME = trivia
 
-all: build up
+all: down build up
 
 build:
 	docker compose build

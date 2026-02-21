@@ -5,7 +5,8 @@
     "ranking": "Ranking",
     "shop": "Shop",
     "profile": "Profile",
-    "level": "XP"
+    "level": "XP",
+    "friends": "Friends"
   },
   "footer": {
     "developedBy": "© 2026 Triple Trouble Trivia. Developed for ft_transcendence 42 Project."
@@ -87,7 +88,8 @@
     "startGame": "Start Game",
     "startFailed": "Failed to start game",
     "gameStarting": "Game is starting!",
-    "cancel": "Cancel Search"
+    "cancel": "Cancel Search",
+    "friendsOnly": "Friends Only"
   },
   "game": {
     "loading": "Loading game...",
@@ -134,6 +136,22 @@
     "changePassword": "Change Password",
     "updated": "Profile updated successfully!",
     "updateFailed": "Failed to update profile",
+    "matchHistory": "Match History",
+    "allMatches": "All",
+    "wins": "Wins",
+    "losses": "Losses",
+    "totalGames": "Total Games",
+    "winRate": "Win Rate",
+    "noMatches": "No matches found",
+    "playFirst": "Play some games to see your history here!",
+    "rank": "Rank",
+    "score": "Score",
+    "players": "Players",
+    "winner": "Winner",
+    "victory": "Victory",
+    "defeat": "Defeat",
+    "mode": "Mode",
+    "loadingHistory": "Loading match history...",
     "invalidFileType": "Invalid file type. Please upload an image.",
     "fileTooLarge": "File is too large. Maximum size: 5MB",
     "uploadingAvatar": "Uploading avatar..."
@@ -147,7 +165,30 @@
     "addFriend": "Add Friend",
     "remove": "Remove",
     "onlineNow": "Online now",
-    "lastSeen": "Last seen recently"
+    "lastSeen": "Last seen recently",
+    "online": "Online",
+    "offline": "Offline",
+    "findFriends": "Find Friends",
+    "pendingRequests": "Pending Requests",
+    "receivedRequests": "Received Requests",
+    "sentRequests": "Sent Requests",
+    "pendingCount": "pending",
+    "pendingRequest": "Request Pending",
+    "noPending": "No pending requests",
+    "noSent": "No sent requests",
+    "noResults": "No users found",
+    "accept": "Accept",
+    "reject": "Reject",
+    "cancel": "Cancel",
+    "requestSent": "Friend request sent!",
+    "requestFailed": "Failed to send request",
+    "requestAccepted": "Friend request accepted!",
+    "requestRejected": "Request rejected",
+    "requestCancelled": "Request cancelled",
+    "friendRemoved": "Friend removed",
+    "actionFailed": "Action failed",
+    "searchFailed": "Search failed",
+    "alreadyFriends": "Already Friends"
   },
   "notFound": {
     "title": "404",
