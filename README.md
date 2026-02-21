@@ -161,6 +161,8 @@ Principais entidades:
 - **chat_messages**: Mensagens de chat direto e grupo
 - **user_friends**: Relacionamento entre amigos
 - **leaderboards**: Cache de rankings para performance
+ - **user_powerups**: Inventário de power-ups (shop) por usuário
+ - **friendships**: Relação de amizade (substitui `user_friends`)
 
 ---
 
@@ -394,7 +396,24 @@ O banco de dados foi projetado com as seguintes características:
 
 ---
 
-#### 9. **friendships** — Relação de Amizade
+---
+
+#### 9. **user_powerups** — Inventário de Power-ups (Shop)
+
+| Campo | Tipo | Constraints | Descrição |
+|-------|------|-----------|-----------|
+| `id` | INT | PRIMARY KEY, AUTO_INCREMENT | ID único do registro de power-up |
+| `user_id` | INT | NOT NULL, FK→users.id | Dono do power-up |
+| `powerup_type` | VARCHAR(32) | NOT NULL | Identificador do tipo de power-up (e.g. `eliminate_two`) |
+| `quantity` | INT | NOT NULL, DEFAULT 0 | Quantidade disponível para o usuário |
+
+**Constraints**: UNIQUE(user_id, powerup_type) — Um tipo de power-up por usuário é único
+
+**Índices**: `idx_powerup_user` — Busca rápida de inventário por usuário
+
+---
+
+#### 10. **friendships** — Relação de Amizade
 
 | Campo | Tipo | Constraints | Descrição |
 |-------|------|-----------|-----------|
