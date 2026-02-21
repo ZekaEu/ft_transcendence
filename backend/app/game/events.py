@@ -7,13 +7,14 @@ from app.core.extensions import socketio, db
 from app.auth.models import User
 from app.game.models import GameRoom, GameRoomPlayer, MatchHistory, get_questions, UserPowerup, POWERUP_CATALOGUE
 
-# In-memory game sessions: { room_id: { questions, current, scores, answered, time_per_question } }
+# In-memory game sessions: { room_id: { questions, current, scores, answered, time_per_question, question_timer, advancing } }
 game_sessions = {}
 
 # Track socket connections: { sid: { user_id, room_id, is_spectator } }
 sid_map = {}
 
 TIME_PER_QUESTION = 15  # seconds
+TIMER_BUFFER = 2  # extra seconds before server forces advance
 BASE_POINTS = 1000
 
 
@@ -147,7 +148,11 @@ def handle_disconnect():
     answered_set.discard(user_id)
     player_ids = list(session['scores'].keys())
 
-    if player_ids and len(answered_set) >= len(player_ids):
+    if player_ids and len(answered_set) >= len(player_ids) and not session.get('advancing'):
+        session['advancing'] = True
+        timer = session.get('question_timer')
+        if timer:
+            timer.cancel()
         app = current_app._get_current_object()
         eventlet.spawn_after(3, _next_question, room_id, app)
 
@@ -226,6 +231,19 @@ def _send_question(room_id):
 
     q = session['questions'][idx]
     session['answered'][idx] = set()
+    session['advancing'] = False  # reset guard for this question
+
+    # Cancel any previous timer
+    old_timer = session.get('question_timer')
+    if old_timer:
+        old_timer.cancel()
+
+    # Start server-side timer to auto-advance when time runs out
+    app = current_app._get_current_object()
+    session['question_timer'] = eventlet.spawn_after(
+        session['time_per_question'] + TIMER_BUFFER,
+        _auto_advance, room_id, idx, app,
+    )
 
     # Send question WITHOUT answer to clients
     socketio.emit('new_question', {
@@ -238,6 +256,23 @@ def _send_question(room_id):
         'image': q.get('image'),
         'time': session['time_per_question'],
     }, room=f'game_{room_id}', namespace='/game')
+
+
+def _auto_advance(room_id, expected_idx, app):
+    """Server-side timer: auto-advance to next question if not already done."""
+    with app.app_context():
+        session = game_sessions.get(room_id)
+        if not session:
+            return
+        # Only advance if still on the same question and not already advancing
+        if session['current'] != expected_idx or session.get('advancing'):
+            return
+        session['advancing'] = True
+        session['current'] += 1
+        if session['current'] >= session['total']:
+            _end_game(room_id)
+        else:
+            _send_question(room_id)
 
 
 @socketio.on('submit_answer', namespace='/game')
@@ -299,9 +334,13 @@ def handle_submit_answer(data):
 
     # Check if all players have answered
     player_ids = list(session['scores'].keys())
-    if len(answered_set) >= len(player_ids):
+    if len(answered_set) >= len(player_ids) and not session.get('advancing'):
+        session['advancing'] = True
+        # Cancel server-side timer since everyone answered
+        timer = session.get('question_timer')
+        if timer:
+            timer.cancel()
         # Small delay then next question
-        import eventlet
         app = current_app._get_current_object()
         eventlet.spawn_after(3, _next_question, room_id, app)
 
@@ -399,19 +438,25 @@ def handle_use_powerup(data):
 
 @socketio.on('time_expired', namespace='/game')
 def handle_time_expired(data):
-    """Host reports time is up — advance to next question."""
+    """Any player reports time is up — advance to next question (with guard)."""
     user_id = _get_user_id(data)
     room_id = data.get('room_id')
     if not user_id or not room_id:
         return
 
-    room = GameRoom.query.get(room_id)
-    if not room or room.host_id != user_id:
-        return  # only host can trigger time expiry
-
     session = game_sessions.get(room_id)
     if not session:
         return
+
+    # Guard: only advance once per question
+    if session.get('advancing'):
+        return
+    session['advancing'] = True
+
+    # Cancel server-side timer
+    timer = session.get('question_timer')
+    if timer:
+        timer.cancel()
 
     # Advance
     session['current'] += 1
@@ -448,6 +493,11 @@ def _end_game(room_id):
     session = game_sessions.get(room_id)
     if not session:
         return
+
+    # Cancel any pending question timer
+    timer = session.get('question_timer')
+    if timer:
+        timer.cancel()
 
     scoreboard = _build_scoreboard(room_id)
 
