@@ -16,6 +16,7 @@ function ProfilePage() {
   const [avatarPreview, setAvatarPreview] = useState(user?.avatar_url || '')
   const [avatarFile, setAvatarFile] = useState(null)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
+  const [removeAvatarFlag, setRemoveAvatarFlag] = useState(false)
 
   // Update form when user data changes
   useEffect(() => {
@@ -100,27 +101,8 @@ function ProfilePage() {
     }
   }
 
-  const handleRemoveAvatar = async () => {
-    if (!user) return
-
-    try {
-      setUploadingAvatar(true)
-      const response = await userService.removeAvatar(user.id)
-      
-      // Update local state with server response
-      if (response.user && response.user.avatar_url === null) {
-        setAvatarFile(null)
-        setAvatarPreview('')
-        toast.success(t('profile.avatarRemoved') || 'Avatar removed successfully')
-        // Refresh user data to sync auth context
-        await refreshUserData()
-      }
-    } catch (err) {
-      console.error('Avatar removal error:', err)
-      toast.error(err.message || t('profile.updateFailed'))
-    } finally {
-      setUploadingAvatar(false)
-    }
+  const handleRemoveAvatar = () => {
+    setRemoveAvatarFlag(!removeAvatarFlag)
   }
 
   const handleAvatarUpload = async (fileToUpload) => {
@@ -156,6 +138,19 @@ function ProfilePage() {
 
       // Update profile fields
       await userService.updateProfile(user.id, updateData)
+
+      // Remove avatar if flagged
+      if (removeAvatarFlag) {
+        try {
+          await userService.removeAvatar(user.id)
+          setAvatarFile(null)
+          setAvatarPreview('')
+          setRemoveAvatarFlag(false)
+        } catch (err) {
+          console.error('Avatar removal error:', err)
+          toast.error(err.message || t('profile.updateFailed'))
+        }
+      }
 
       // Upload avatar if a new file was selected
       if (avatarFile) {
@@ -249,9 +244,9 @@ function ProfilePage() {
                   variant="outline"
                   onClick={handleRemoveAvatar}
                   disabled={loading || uploadingAvatar}
-                  className="text-red-600 hover:bg-red-50"
+                  className={removeAvatarFlag ? 'text-orange-600 hover:bg-orange-50' : 'text-red-600 hover:bg-red-50'}
                 >
-                  {t('profile.removeAvatar')}
+                  {removeAvatarFlag ? t('profile.cancelRemoveAvatar') || 'Cancel removal' : t('profile.removeAvatar')}
                 </Button>
               )}
             </div>
