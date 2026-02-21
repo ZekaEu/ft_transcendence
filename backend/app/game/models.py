@@ -99,13 +99,13 @@ KAHOOT_CATEGORIES = KAHOOT_CATEGORIES_EN
 
 VALID_DIFFICULTIES = ("any", "easy", "medium", "hard")
 
-# Supported languages for Kahoot quiz search
+# Supported languages for Kahoot quiz search (Kahoot uses native language names)
 KAHOOT_LANGUAGES = {
     "any": None,
     "en":  "English",
-    "es":  "Spanish",
-    "fr":  "French",
-    "pt":  "Portuguese",
+    "es":  "Español",
+    "fr":  "Français",
+    "pt":  "Português",
 }
 
 
@@ -246,9 +246,8 @@ def _fetch_kahoot_questions(count=10, category=None, difficulty=None, language=N
     Fetch trivia questions from the Kahoot API.
     Strategy:
       - English (or 'any'): search with English query + language=English filter
-      - Other languages (pt, es, fr): search with localized query WITHOUT language filter
-        (Kahoot has very few results when using the language filter for non-English)
-      - Fallback: if localized search fails, retry with English query (no filter)
+      - Other languages (pt, es, fr): search with localized query + native language filter
+      - Fallback: if search fails, retry with English query (no filter)
     """
     cat = category or "any"
     lang = language or "any"
@@ -259,9 +258,9 @@ def _fetch_kahoot_questions(count=10, category=None, difficulty=None, language=N
         search_query = KAHOOT_CATEGORIES_EN.get(cat, "trivia quiz")
         kahoot_lang = "English" if lang == "en" else None
     elif lang in KAHOOT_CATEGORIES_LOCALIZED:
-        # Non-English: search with localized query, NO language filter
+        # Non-English: search with localized query + native language filter
         search_query = KAHOOT_CATEGORIES_LOCALIZED[lang].get(cat, "quiz")
-        kahoot_lang = None
+        kahoot_lang = KAHOOT_LANGUAGES.get(lang)
     else:
         # Unknown language: use English
         search_query = KAHOOT_CATEGORIES_EN.get(cat, "trivia quiz")
