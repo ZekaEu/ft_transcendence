@@ -9,9 +9,37 @@ let gameSocket = null
 // REST API calls
 // ──────────────────────────────────────────────
 export const gameService = {
+  // ── Ranking ──────────────────────────────
+  getRanking: async (limit = 50) => {
+    const response = await apiClient.get('/game/ranking', { params: { limit } })
+    return response.data
+  },
+
   // ── Match History ────────────────────────
   getMatchHistory: async (filter = 'all') => {
     const response = await apiClient.get('/game/history', { params: { filter } })
+    return response.data
+  },
+
+  // ── Shop ──────────────────────────────────
+  getShopCatalogue: async () => {
+    const response = await apiClient.get('/game/shop/catalogue')
+    return response.data
+  },
+
+  buyPowerup: async (powerup_type, quantity = 1) => {
+    const response = await apiClient.post('/game/shop/buy', { powerup_type, quantity })
+    return response.data
+  },
+
+  getInventory: async () => {
+    const response = await apiClient.get('/game/shop/inventory')
+    return response.data
+  },
+
+  // ── Trivia metadata ───────────────────────
+  getCategories: async () => {
+    const response = await apiClient.get('/game/trivia/categories')
     return response.data
   },
 
@@ -27,8 +55,8 @@ export const gameService = {
     return response.data
   },
 
-  createRoom: async ({ name, game_mode, max_players, friends_only, question_language }) => {
-    const response = await apiClient.post('/game/rooms', { name, game_mode, max_players, friends_only, question_language })
+  createRoom: async ({ name, game_mode, max_players, friends_only, question_language, question_category, question_difficulty }) => {
+    const response = await apiClient.post('/game/rooms', { name, game_mode, max_players, friends_only, question_language, question_category, question_difficulty })
     return response.data
   },
 
@@ -120,6 +148,10 @@ export const gameService = {
     gameSocket?.emit('time_expired', { room_id: roomId, token })
   },
 
+  usePowerup: (roomId, powerupType, token) => {
+    gameSocket?.emit('use_powerup', { room_id: roomId, powerup_type: powerupType, token })
+  },
+
   // ── Event listeners ─────────────────────
   onPlayerJoined: (callback) => {
     gameSocket?.on('player_joined', callback)
@@ -149,6 +181,10 @@ export const gameService = {
     gameSocket?.on('game_finished', callback)
   },
 
+  onPowerupResult: (callback) => {
+    gameSocket?.on('powerup_result', callback)
+  },
+
   onError: (callback) => {
     gameSocket?.on('error', callback)
   },
@@ -161,5 +197,6 @@ export const gameService = {
   offAnswerResult: () => gameSocket?.off('answer_result'),
   offScoreboardUpdate: () => gameSocket?.off('scoreboard_update'),
   offGameFinished: () => gameSocket?.off('game_finished'),
+  offPowerupResult: () => gameSocket?.off('powerup_result'),
   offError: () => gameSocket?.off('error'),
 }

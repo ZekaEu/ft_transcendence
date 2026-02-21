@@ -103,40 +103,44 @@ function HomePage() {
         </div>
       </section>
 
-      {/* Game Modes */}
+      {/* Categories */}
       <section className="space-y-8">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold flex items-center gap-2">
             <span className="material-icons-round text-secondary-500">category</span>
-            {t('home.gameModes')}
+            {t('home.categories')}
           </h2>
-          <Link to="/modes" className="text-primary-500 font-semibold hover:underline">
+          <Link to="/lobby" className="text-primary-500 font-semibold hover:underline">
             {t('home.viewAll')}
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <GameModeCard
-            title={t('home.classic')}
-            description={t('home.classicDesc')}
-            icon="emoji_events"
-            color="purple"
-            to="/lobby?mode=classic"
-          />
-          <GameModeCard
-            title={t('home.survival')}
-            description={t('home.survivalDesc')}
-            icon="timer"
-            color="red"
-            to="/lobby?mode=survival"
-          />
-          <GameModeCard
-            title={t('home.timed')}
-            description={t('home.timedDesc')}
-            icon="bolt"
-            color="amber"
-            to="/lobby?mode=duel"
-          />
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          {[
+            { key: 'science', icon: 'science', color: 'from-blue-400 to-blue-600' },
+            { key: 'history', icon: 'history_edu', color: 'from-amber-400 to-amber-600' },
+            { key: 'geography', icon: 'public', color: 'from-green-400 to-green-600' },
+            { key: 'sports', icon: 'sports_soccer', color: 'from-red-400 to-red-600' },
+            { key: 'music', icon: 'music_note', color: 'from-purple-400 to-purple-600' },
+            { key: 'movies', icon: 'movie', color: 'from-pink-400 to-pink-600' },
+            { key: 'technology', icon: 'computer', color: 'from-cyan-400 to-cyan-600' },
+            { key: 'nature', icon: 'park', color: 'from-emerald-400 to-emerald-600' },
+            { key: 'gaming', icon: 'sports_esports', color: 'from-indigo-400 to-indigo-600' },
+            { key: 'art', icon: 'palette', color: 'from-rose-400 to-rose-600' },
+          ].map((cat) => (
+            <Link
+              key={cat.key}
+              to="/lobby"
+              className="group glass rounded-2xl p-5 hover:ring-2 hover:ring-primary-500/50 transition-all text-center space-y-3"
+            >
+              <div className={`w-12 h-12 mx-auto rounded-xl bg-gradient-to-br ${cat.color} flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform`}>
+                <span className="material-icons-round text-2xl">{cat.icon}</span>
+              </div>
+              <p className="text-sm font-bold text-slate-700 dark:text-slate-200">
+                {t(`lobby.cat_${cat.key}`)}
+              </p>
+            </Link>
+          ))}
         </div>
       </section>
 
@@ -202,37 +206,6 @@ function HomePage() {
         </div>
       </div>
     </div>
-  )
-}
-
-function GameModeCard({ title, description, icon, color, to }) {
-  const { t } = useTranslation()
-  const colors = {
-    purple: 'from-purple-400 to-purple-600 ring-secondary-500 bg-secondary-500/10',
-    red: 'from-red-400 to-red-600 ring-red-500 bg-red-500/10',
-    amber: 'from-amber-400 to-amber-600 ring-amber-500 bg-amber-500/10',
-  }
-
-  const textColor = {
-    purple: 'text-secondary-500',
-    red: 'text-red-500',
-    amber: 'text-amber-500',
-  }
-
-  return (
-    <Link to={to} className={`group relative glass rounded-2xl p-8 hover:ring-2 ${colors[color].split(' ')[2]} transition-all cursor-pointer overflow-hidden block`}>
-      <div className={`absolute -right-4 -top-4 w-24 h-24 ${colors[color].split(' ')[3]} rounded-full group-hover:scale-150 transition-transform duration-500`}></div>
-      <div className="relative space-y-4">
-        <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${colors[color].split(' ')[0]} ${colors[color].split(' ')[1]} flex items-center justify-center text-white shadow-lg`}>
-          <span className="material-icons-round text-3xl">{icon}</span>
-        </div>
-        <h3 className="text-2xl font-bold">{title}</h3>
-        <p className="text-slate-500 dark:text-slate-400">{description}</p>
-        <div className={`pt-4 flex items-center gap-2 ${textColor[color]} font-bold`}>
-          {t('lobby.ready')} <span className="material-icons-round group-hover:translate-x-1 transition-transform">arrow_forward</span>
-        </div>
-      </div>
-    </Link>
   )
 }
 

@@ -27,6 +27,10 @@ function GamePage() {
     const [scoreboard, setScoreboard] = useState([])
     const [room, setRoom] = useState(null)
     const [streak, setStreak] = useState(0)
+    const [eliminatedIndices, setEliminatedIndices] = useState([])
+    const [highlightedAnswer, setHighlightedAnswer] = useState(null)
+    const [powerups, setPowerups] = useState({})   // { eliminate_two: qty, show_answer: qty }
+    const [usedThisQuestion, setUsedThisQuestion] = useState({}) // { type: true }
     const timerRef = useRef(null)
 
     // ── Restore room on mount ─────────────
@@ -39,6 +43,11 @@ function GamePage() {
                 } else {
                     navigate('/lobby')
                 }
+                // Load powerup inventory
+                const invRes = await gameService.getInventory()
+                const inv = {}
+                ;(invRes.inventory || []).forEach((r) => { inv[r.powerup_type] = r.quantity })
+                setPowerups(inv)
             } catch {
                 navigate('/lobby')
             }
@@ -61,6 +70,9 @@ function GamePage() {
             setTotalTime(data.time)
             setSelectedAnswer(null)
             setLastResult(null)
+            setEliminatedIndices([])
+            setHighlightedAnswer(null)
+            setUsedThisQuestion({})
             setPhase('question')
         })
 
@@ -88,6 +100,23 @@ function GamePage() {
             console.error('[game] error:', err.message)
         })
 
+        gameService.onPowerupResult((data) => {
+            if (!data.success) return
+            if (data.powerup_type === 'eliminate_two' && data.eliminated) {
+                setEliminatedIndices(data.eliminated)
+            } else if (data.powerup_type === 'show_answer' && data.correct_index !== undefined) {
+                setHighlightedAnswer(data.correct_index)
+            }
+            // Decrement local powerup count
+            setPowerups((prev) => {
+                const updated = { ...prev }
+                if (updated[data.powerup_type]) {
+                    updated[data.powerup_type] = Math.max(0, updated[data.powerup_type] - 1)
+                }
+                return updated
+            })
+        })
+
         // Don't emit game_started here — LobbyPage already did it
 
         return () => {
@@ -95,6 +124,7 @@ function GamePage() {
             gameService.offAnswerResult()
             gameService.offScoreboardUpdate()
             gameService.offGameFinished()
+            gameService.offPowerupResult()
             gameService.offError()
             gameService.disconnectSocket()
         }
@@ -139,6 +169,17 @@ function GamePage() {
         const token = localStorage.getItem('authToken')
         gameService.submitAnswer(room.id, index, timeLeft, token)
     }, [phase, selectedAnswer, room, timeLeft])
+
+    // ── Handle powerup usage ─────────────
+    const handleUsePowerup = useCallback((type) => {
+        if (phase !== 'question' || selectedAnswer !== null) return
+        if (usedThisQuestion[type]) return
+        if (!powerups[type] || powerups[type] <= 0) return
+
+        const token = localStorage.getItem('authToken')
+        gameService.usePowerup(room.id, type, token)
+        setUsedThisQuestion((prev) => ({ ...prev, [type]: true }))
+    }, [phase, selectedAnswer, room, powerups, usedThisQuestion])
 
     // ── Loading state ─────────────────────
     if (phase === 'loading' || !room) {
@@ -209,9 +250,12 @@ function GamePage() {
 
             {/* Options Grid */}
             {question && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full mb-12">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full mb-6">
                     {question.options.map((option, i) => {
                         let state = 'idle'
+                        const isEliminated = eliminatedIndices.includes(i)
+                        const isHighlighted = highlightedAnswer === i
+
                         if (phase === 'feedback' && lastResult) {
                             if (i === lastResult.correct_answer) {
                                 state = 'correct'
@@ -227,10 +271,57 @@ function GamePage() {
                                 color={ANSWER_COLORS[i]}
                                 onClick={() => handleAnswer(i)}
                                 state={state}
-                                disabled={phase !== 'question' || selectedAnswer !== null}
+                                disabled={phase !== 'question' || selectedAnswer !== null || isEliminated}
+                                eliminated={isEliminated}
+                                highlighted={isHighlighted}
                             />
                         )
                     })}
+                </div>
+            )}
+
+            {/* Power-up Buttons */}
+            {question && phase === 'question' && selectedAnswer === null && (
+                <div className="flex items-center justify-center gap-3 mb-8">
+                    {/* Eliminate Two */}
+                    {(powerups.eliminate_two > 0 || usedThisQuestion.eliminate_two) && (
+                        <button
+                            onClick={() => handleUsePowerup('eliminate_two')}
+                            disabled={usedThisQuestion.eliminate_two || eliminatedIndices.length > 0}
+                            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all active:scale-95 ${
+                                usedThisQuestion.eliminate_two
+                                    ? 'bg-slate-200 dark:bg-slate-700 text-slate-400 cursor-not-allowed'
+                                    : 'bg-gradient-to-r from-red-500 to-orange-500 text-white hover:opacity-90 shadow-lg'
+                            }`}
+                            title={t('shop.powerup_eliminate_two')}
+                        >
+                            <span className="material-icons-round text-lg">remove_circle</span>
+                            {t('game.eliminate50')}
+                            {!usedThisQuestion.eliminate_two && (
+                                <span className="bg-white/20 px-2 py-0.5 rounded-full text-xs">{powerups.eliminate_two}</span>
+                            )}
+                        </button>
+                    )}
+
+                    {/* Show Answer */}
+                    {(powerups.show_answer > 0 || usedThisQuestion.show_answer) && (
+                        <button
+                            onClick={() => handleUsePowerup('show_answer')}
+                            disabled={usedThisQuestion.show_answer || highlightedAnswer !== null}
+                            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all active:scale-95 ${
+                                usedThisQuestion.show_answer
+                                    ? 'bg-slate-200 dark:bg-slate-700 text-slate-400 cursor-not-allowed'
+                                    : 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:opacity-90 shadow-lg'
+                            }`}
+                            title={t('shop.powerup_show_answer')}
+                        >
+                            <span className="material-icons-round text-lg">visibility</span>
+                            {t('game.showAnswer')}
+                            {!usedThisQuestion.show_answer && (
+                                <span className="bg-white/20 px-2 py-0.5 rounded-full text-xs">{powerups.show_answer}</span>
+                            )}
+                        </button>
+                    )}
                 </div>
             )}
 
@@ -290,15 +381,19 @@ function GamePage() {
 // ──────────────────────────────────────────────
 // Answer Button
 // ──────────────────────────────────────────────
-function AnswerButton({ index, label, color, onClick, state, disabled }) {
+function AnswerButton({ index, label, color, onClick, state, disabled, eliminated, highlighted }) {
     let buttonClass = `${color.bg} ${color.shadow} ${color.hover}`
     if (state === 'correct') {
         buttonClass = 'bg-green-500 shadow-[0_8px_0_rgb(34,197,94)] animate-bounce-subtle'
     } else if (state === 'wrong') {
         buttonClass = 'bg-red-500 shadow-[0_8px_0_rgb(239,68,68)] opacity-100'
+    } else if (eliminated) {
+        buttonClass = 'bg-slate-400 dark:bg-slate-700 shadow-[0_8px_0_rgb(100,116,139)] opacity-30 line-through'
+    } else if (highlighted) {
+        buttonClass = 'bg-green-500 shadow-[0_8px_0_rgb(34,197,94)] ring-4 ring-green-300 animate-pulse'
     }
 
-    const opacity = state === 'idle' ? '' : (state === 'correct' || state === 'wrong' ? 'opacity-100' : 'opacity-40')
+    const opacity = eliminated ? 'opacity-30' : (state === 'idle' ? '' : (state === 'correct' || state === 'wrong' ? 'opacity-100' : 'opacity-40'))
 
     return (
         <button
@@ -307,8 +402,10 @@ function AnswerButton({ index, label, color, onClick, state, disabled }) {
             className={`group relative flex items-center p-6 text-white rounded-2xl active:shadow-none active:translate-y-[8px] transition-all overflow-hidden h-24 ${buttonClass} ${opacity} ${disabled ? 'cursor-not-allowed' : ''}`}
         >
             <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-white/20 font-black mr-4">{index}</span>
-            <span className="text-xl font-bold">{label}</span>
+            <span className={`text-xl font-bold ${eliminated ? 'line-through' : ''}`}>{label}</span>
             {state === 'correct' && <span className="material-icons-round ml-auto text-3xl">check_circle</span>}
+            {eliminated && <span className="material-icons-round ml-auto text-3xl opacity-60">block</span>}
+            {highlighted && state === 'idle' && <span className="material-icons-round ml-auto text-3xl">star</span>}
             <div className="absolute right-[-10%] top-[-20%] opacity-10 scale-150 pointer-events-none">
                 <span className="material-icons-round text-9xl">{color.icon}</span>
             </div>

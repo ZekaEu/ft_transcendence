@@ -3,8 +3,9 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from app.game import game_bp
 from app.core.extensions import db, socketio
+from app.auth.models import User
 from app.game.models import GameRoom, GameRoomPlayer, KAHOOT_CATEGORIES, KAHOOT_LANGUAGES, VALID_DIFFICULTIES
-from app.game.models import GameRoom, GameRoomPlayer
+from app.game.models import GameRoom, GameRoomPlayer, UserPowerup, POWERUP_CATALOGUE
 from app.friends.models import Friendship
 
 
@@ -52,10 +53,7 @@ def current_room():
 @jwt_required()
 def list_rooms():
     user_id = int(get_jwt_identity())
-    mode = request.args.get('mode')
     query = GameRoom.query.filter_by(status='waiting')
-    if mode:
-        query = query.filter_by(game_mode=mode)
     rooms = query.order_by(GameRoom.created_at.desc()).all()
 
     # Filter out friends_only rooms where user is not friends with host
@@ -89,7 +87,6 @@ def create_room():
     data = request.get_json() or {}
 
     name = (data.get('name') or '').strip()
-    game_mode = data.get('game_mode', 'classic')
     max_players = data.get('max_players', 4)
     question_category = data.get('question_category', 'any')
     question_difficulty = data.get('question_difficulty', 'any')
@@ -98,9 +95,6 @@ def create_room():
 
     if not name:
         return jsonify({'message': 'Room name is required'}), 400
-
-    if game_mode not in ('classic', 'survival', 'timed'):
-        return jsonify({'message': 'Invalid game mode'}), 400
 
     if question_category not in KAHOOT_CATEGORIES:
         return jsonify({'message': 'Invalid question category'}), 400
@@ -126,7 +120,7 @@ def create_room():
     room = GameRoom(
         name=name,
         host_id=user_id,
-        game_mode=game_mode,
+        game_mode='classic',
         max_players=max_players,
         question_category=question_category,
         question_difficulty=question_difficulty,
@@ -300,6 +294,50 @@ def start_game(room_id):
 
 
 # ──────────────────────────────────────────────
+# Global ranking (sorted by XP)
+# ──────────────────────────────────────────────
+@game_bp.route('/ranking', methods=['GET'])
+@jwt_required()
+def global_ranking():
+    """Return all users sorted by XP descending."""
+    limit = request.args.get('limit', 50, type=int)
+    limit = min(max(limit, 1), 200)
+
+    users = (
+        User.query
+        .filter(User.xp > 0)
+        .order_by(User.xp.desc())
+        .limit(limit)
+        .all()
+    )
+
+    ranking = []
+    for idx, u in enumerate(users):
+        # Count finished games for this user
+        games_played = (
+            GameRoomPlayer.query
+            .join(GameRoom)
+            .filter(
+                GameRoomPlayer.user_id == u.id,
+                GameRoom.status == 'finished',
+            )
+            .count()
+        )
+        ranking.append({
+            'rank': idx + 1,
+            'user_id': u.id,
+            'username': u.username,
+            'display_name': u.display_name or u.username,
+            'avatar_url': u.avatar_url,
+            'xp': u.xp,
+            'level': u.level,
+            'games_played': games_played,
+        })
+
+    return jsonify(ranking), 200
+
+
+# ──────────────────────────────────────────────
 # Match history for the logged-in user
 # ──────────────────────────────────────────────
 @game_bp.route('/history', methods=['GET'])
@@ -388,4 +426,86 @@ def match_history():
             'losses': losses,
             'win_rate': round((wins / total_games) * 100, 1) if total_games > 0 else 0,
         },
+    }), 200
+
+
+# ──────────────────────────────────────────────
+# Shop – catalogue
+# ──────────────────────────────────────────────
+@game_bp.route('/shop/catalogue', methods=['GET'])
+@jwt_required()
+def shop_catalogue():
+    """Return the power-up catalogue with prices."""
+    items = []
+    for ptype, info in POWERUP_CATALOGUE.items():
+        items.append({
+            'type': ptype,
+            'name': info['name'],
+            'cost': info['cost'],
+            'icon': info['icon'],
+        })
+    return jsonify({'items': items}), 200
+
+
+# ──────────────────────────────────────────────
+# Shop – buy power-up
+# ──────────────────────────────────────────────
+@game_bp.route('/shop/buy', methods=['POST'])
+@jwt_required()
+def shop_buy():
+    """Purchase a power-up using XP."""
+    user_id = int(get_jwt_identity())
+    data = request.get_json() or {}
+    powerup_type = data.get('powerup_type')
+    quantity = data.get('quantity', 1)
+
+    if not powerup_type or powerup_type not in POWERUP_CATALOGUE:
+        return jsonify({'error': 'Invalid powerup type'}), 400
+
+    if not isinstance(quantity, int) or quantity < 1:
+        return jsonify({'error': 'Quantity must be a positive integer'}), 400
+
+    cost_each = POWERUP_CATALOGUE[powerup_type]['cost']
+    total_cost = cost_each * quantity
+
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
+    if (user.xp or 0) < total_cost:
+        return jsonify({'error': 'Not enough XP', 'required': total_cost, 'current': user.xp or 0}), 400
+
+    # Deduct XP
+    user.xp = (user.xp or 0) - total_cost
+
+    # Add or update powerup inventory
+    record = UserPowerup.query.filter_by(user_id=user_id, powerup_type=powerup_type).first()
+    if record:
+        record.quantity += quantity
+    else:
+        record = UserPowerup(user_id=user_id, powerup_type=powerup_type, quantity=quantity)
+        db.session.add(record)
+
+    db.session.commit()
+
+    return jsonify({
+        'message': f'Purchased {quantity}x {powerup_type}',
+        'powerup': record.to_dict(),
+        'xp_remaining': user.xp,
+    }), 200
+
+
+# ──────────────────────────────────────────────
+# Shop – inventory (user's power-ups)
+# ──────────────────────────────────────────────
+@game_bp.route('/shop/inventory', methods=['GET'])
+@jwt_required()
+def shop_inventory():
+    """Return the current user's power-up inventory."""
+    user_id = int(get_jwt_identity())
+    records = UserPowerup.query.filter_by(user_id=user_id).all()
+    user = User.query.get(user_id)
+    return jsonify({
+        'inventory': [r.to_dict() for r in records],
+        'xp': user.xp if user else 0,
     }), 200
