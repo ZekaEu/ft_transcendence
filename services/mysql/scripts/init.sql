@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS users (
     avatar_url      VARCHAR(512)    NULL,
     display_name    VARCHAR(128)    NULL,
     bio             VARCHAR(500)    NULL,
+    xp              INT             NOT NULL DEFAULT 0,
     is_active       BOOLEAN         NOT NULL DEFAULT TRUE,
     is_online       BOOLEAN         NOT NULL DEFAULT FALSE,
     last_seen       DATETIME        NULL,

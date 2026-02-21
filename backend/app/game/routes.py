@@ -3,6 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from app.game import game_bp
 from app.core.extensions import db, socketio
+from app.auth.models import User
 from app.game.models import GameRoom, GameRoomPlayer, KAHOOT_CATEGORIES, KAHOOT_LANGUAGES, VALID_DIFFICULTIES
 from app.game.models import GameRoom, GameRoomPlayer
 from app.friends.models import Friendship
@@ -297,6 +298,50 @@ def start_game(room_id):
     db.session.commit()
 
     return jsonify(room.to_dict()), 200
+
+
+# ──────────────────────────────────────────────
+# Global ranking (sorted by XP)
+# ──────────────────────────────────────────────
+@game_bp.route('/ranking', methods=['GET'])
+@jwt_required()
+def global_ranking():
+    """Return all users sorted by XP descending."""
+    limit = request.args.get('limit', 50, type=int)
+    limit = min(max(limit, 1), 200)
+
+    users = (
+        User.query
+        .filter(User.xp > 0)
+        .order_by(User.xp.desc())
+        .limit(limit)
+        .all()
+    )
+
+    ranking = []
+    for idx, u in enumerate(users):
+        # Count finished games for this user
+        games_played = (
+            GameRoomPlayer.query
+            .join(GameRoom)
+            .filter(
+                GameRoomPlayer.user_id == u.id,
+                GameRoom.status == 'finished',
+            )
+            .count()
+        )
+        ranking.append({
+            'rank': idx + 1,
+            'user_id': u.id,
+            'username': u.username,
+            'display_name': u.display_name or u.username,
+            'avatar_url': u.avatar_url,
+            'xp': u.xp,
+            'level': u.level,
+            'games_played': games_played,
+        })
+
+    return jsonify(ranking), 200
 
 
 # ──────────────────────────────────────────────

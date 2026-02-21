@@ -9,6 +9,12 @@ let gameSocket = null
 // REST API calls
 // ──────────────────────────────────────────────
 export const gameService = {
+  // ── Ranking ──────────────────────────────
+  getRanking: async (limit = 50) => {
+    const response = await apiClient.get('/game/ranking', { params: { limit } })
+    return response.data
+  },
+
   // ── Match History ────────────────────────
   getMatchHistory: async (filter = 'all') => {
     const response = await apiClient.get('/game/history', { params: { filter } })

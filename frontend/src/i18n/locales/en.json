@@ -112,7 +112,13 @@
     "title": "Global Ranking",
     "subtitle": "Compete with trivia masters around the world",
     "streak": "Current Streak",
-    "points": "Points"
+    "points": "Points",
+    "xp": "XP",
+    "level": "Level",
+    "gamesPlayed": "Games",
+    "noPlayers": "No players ranked yet",
+    "beFirst": "Play a game to appear on the leaderboard!",
+    "loading": "Loading ranking..."
   },
   "shop": {
     "title": "Triple Trouble Shop",

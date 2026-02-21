@@ -151,5 +151,17 @@
     "startFailed": "Error al iniciar el juego",
     "gameStarting": "¡El juego está comenzando!",
     "cancel": "Cancelar Búsqueda"
+  },
+  "ranking": {
+    "title": "Clasificación Global",
+    "subtitle": "Compite con los maestros del trivia de todo el mundo",
+    "streak": "Racha Actual",
+    "points": "Puntos",
+    "xp": "XP",
+    "level": "Nivel",
+    "gamesPlayed": "Partidas",
+    "noPlayers": "Ningún jugador clasificado todavía",
+    "beFirst": "¡Juega una partida para aparecer en la clasificación!",
+    "loading": "Cargando clasificación..."
   }
 }

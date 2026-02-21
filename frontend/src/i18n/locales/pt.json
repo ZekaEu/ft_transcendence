@@ -112,7 +112,13 @@
         "title": "Ranking Global",
         "subtitle": "Compita com os mestres da trivia ao redor do mundo",
         "streak": "Combo Atual",
-        "points": "Pontos"
+        "points": "Pontos",
+        "xp": "XP",
+        "level": "Nível",
+        "gamesPlayed": "Jogos",
+        "noPlayers": "Nenhum jogador classificado ainda",
+        "beFirst": "Jogue uma partida para aparecer no ranking!",
+        "loading": "Carregando ranking..."
     },
     "shop": {
         "title": "Loja Triple Trouble",

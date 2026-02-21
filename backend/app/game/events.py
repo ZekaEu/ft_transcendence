@@ -341,7 +341,7 @@ def _end_game(room_id):
 
     scoreboard = _build_scoreboard(room_id)
 
-    # Persist scores to DB
+    # Persist scores to DB and accumulate XP
     room = GameRoom.query.get(room_id)
     if room:
         room.status = 'finished'
@@ -349,6 +349,10 @@ def _end_game(room_id):
             player = room.players.filter_by(user_id=entry['user_id']).first()
             if player:
                 player.score = entry['score']
+            # Add match score as XP to the user
+            user = User.query.get(entry['user_id'])
+            if user:
+                user.xp = (user.xp or 0) + entry['score']
         db.session.commit()
 
     # Send final results

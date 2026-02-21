@@ -151,5 +151,17 @@
     "startFailed": "Échec du lancement",
     "gameStarting": "La partie commence !",
     "cancel": "Annuler la Recherche"
+  },
+  "ranking": {
+    "title": "Classement Mondial",
+    "subtitle": "Affrontez les maîtres du trivia du monde entier",
+    "streak": "Série Actuelle",
+    "points": "Points",
+    "xp": "XP",
+    "level": "Niveau",
+    "gamesPlayed": "Parties",
+    "noPlayers": "Aucun joueur classé pour l'instant",
+    "beFirst": "Jouez une partie pour apparaître au classement !",
+    "loading": "Chargement du classement..."
   }
 }
