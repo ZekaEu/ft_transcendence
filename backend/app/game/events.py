@@ -159,7 +159,12 @@ def handle_game_started(data):
     elif room.game_mode == 'timed':
         q_count = 10
 
-    questions = get_questions(q_count)
+    questions = get_questions(
+        count=q_count,
+        category=room.question_category,
+        difficulty=room.question_difficulty,
+        language=room.question_language,
+    )
     player_ids = [p.user_id for p in room.players]
 
     game_sessions[room_id] = {
@@ -203,6 +208,8 @@ def _send_question(room_id):
         'question': q['question'],
         'options': q['options'],
         'category': q['category'],
+        'difficulty': q.get('difficulty', 'medium'),
+        'image': q.get('image'),
         'time': session['time_per_question'],
     }, room=f'game_{room_id}', namespace='/game')
 

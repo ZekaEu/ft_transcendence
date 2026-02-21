@@ -5,8 +5,8 @@
         "ranking": "Ranking",
         "shop": "Loja",
         "profile": "Perfil",
-        "friends": "Amigos",
-        "level": "Nível"
+        "level": "XP",
+        "friends": "Amigos"
     },
     "footer": {
         "developedBy": "© 2026 Triple Trouble Trivia. Desenvolvido para o projeto ft_transcendence da 42."
@@ -105,7 +105,7 @@
         "finalScore": "Pontuação Final",
         "yourRank": "Sua Posição",
         "you": "você",
-        "playAgain": "JOGAR NOVAMENTE",
+        "playAgain": "Voltar para o Lobby",
         "backMenu": "Voltar ao Menu"
     },
     "ranking": {
@@ -135,7 +135,23 @@
         "saving": "Salvando...",
         "changePassword": "Mudar Senha",
         "updated": "Perfil atualizado com sucesso!",
-        "updateFailed": "Falha ao atualizar o perfil",
+        "updateFailed": "Falha ao atualizar perfil",
+        "matchHistory": "Histórico de Partidas",
+        "allMatches": "Todas",
+        "wins": "Vitórias",
+        "losses": "Derrotas",
+        "totalGames": "Total de Jogos",
+        "winRate": "Taxa de Vitória",
+        "noMatches": "Nenhuma partida encontrada",
+        "playFirst": "Jogue algumas partidas para ver seu histórico aqui!",
+        "rank": "Posição",
+        "score": "Pontuação",
+        "players": "Jogadores",
+        "winner": "Vencedor",
+        "victory": "Vitória",
+        "defeat": "Derrota",
+        "mode": "Modo",
+        "loadingHistory": "Carregando histórico...",
         "invalidFileType": "Tipo de arquivo inválido. Por favor, faça upload de uma imagem.",
         "fileTooLarge": "Arquivo muito grande. Tamanho máximo: 5MB",
         "uploadingAvatar": "Enviando avatar..."

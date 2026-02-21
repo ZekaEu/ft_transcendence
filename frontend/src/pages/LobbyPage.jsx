@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import i18n from '../i18n'
 import toast from 'react-hot-toast'
 import { useAuth } from '../hooks/useAuth'
 import { gameService } from '../services/gameService'
@@ -444,7 +445,8 @@ function CreateRoomModal({ onClose, onCreate, t }) {
         e.preventDefault()
         if (!name.trim()) return
         setSubmitting(true)
-        await onCreate({ name: name.trim(), game_mode: gameMode, max_players: maxPlayers, friends_only: friendsOnly })
+        const currentLang = i18n.language;
+        await onCreate({ name: name.trim(), game_mode: gameMode, max_players: maxPlayers, friends_only: friendsOnly, question_language: currentLang })
         setSubmitting(false)
     }
 

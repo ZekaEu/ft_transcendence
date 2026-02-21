@@ -1,9 +1,14 @@
 {
   "navbar": {
     "home": "Inicio",
-    "friends": "Amigos",
+    "chat": "Chat",
+    "ranking": "Ranking",
+    "shop": "Tienda",
     "profile": "Perfil",
-    "logout": "Cerrar sesión"
+    "level": "XP"
+  },
+  "footer": {
+    "developedBy": "© 2026 Triple Trouble Trivia. Desarrollado para el proyecto ft_transcendence de 42."
   },
   "auth": {
     "login": "Iniciar sesión",
@@ -12,15 +17,45 @@
     "password": "Contraseña",
     "username": "Nombre de usuario",
     "confirmPassword": "Confirmar contraseña",
-    "rememberMe": "Recuérdame",
-    "forgotPassword": "¿Olvidaste tu contraseña?",
     "noAccount": "¿No tienes cuenta?",
+    "signupNow": "Regístrate ahora",
     "haveAccount": "¿Ya tienes cuenta?",
+    "loginNow": "Inicia sesión",
+    "creatingAccount": "Creando cuenta...",
+    "signingIn": "Iniciando sesión...",
+    "passwordsDoNotMatch": "Las contraseñas no coinciden",
+    "passwordMinLength": "La contraseña debe tener al menos 8 caracteres",
+    "accountCreated": "¡Cuenta creada con éxito!",
+    "signupFailed": "Error en el registro",
     "continueWith42": "Continuar con 42",
     "continueWithGoogle": "Continuar con Google",
     "orContinueWith": "o continuar con email",
     "oauthFailed": "Error en el inicio de sesión OAuth. Inténtalo de nuevo.",
     "success": "¡Inicio de sesión exitoso!"
+  },
+  "home": {
+    "readyFor": "¿Listo para el ",
+    "challenge": "Desafío?",
+    "heroSubtitle": "Batalla con tus amigos en tiempo real y demuestra quién es el verdadero maestro de trivia.",
+    "playNow": "JUEGA AHORA",
+    "playersOnline": "jugadores en línea ahora",
+    "gameModes": "Modos de Juego",
+    "viewAll": "Ver todos",
+    "classic": "Clásico",
+    "classicDesc": "10 preguntas de varios temas. ¡Aquí lo que importa es la precisión!",
+    "survival": "Supervivencia",
+    "survivalDesc": "Responde todo lo que puedas sin perder. El tiempo es tu mayor enemigo.",
+    "timed": "A Contrarreloj",
+    "timedDesc": "¡Vence al reloj! Consigue la mayor cantidad de puntos en 2 minutos.",
+    "recentAchievements": "Logros Recientes",
+    "triviaKing": "Rey de la Trivia",
+    "triviaKingDesc": "Ganó 10 partidas seguidas",
+    "fastLearner": "Aprendiz Rápido",
+    "fastLearnerDesc": "Completó el primer tutorial",
+    "friends": "Amigos en Línea",
+    "playing": "Jugando",
+    "online": "En línea",
+    "offline": "Desconectado"
   },
   "profile": {
     "myProfile": "Mi Perfil",
@@ -33,8 +68,24 @@
     "selectFile": "Seleccionar archivo",
     "removeAvatar": "Eliminar avatar",
     "saveChanges": "Guardar cambios",
-    "saving": "Guardando...",
     "changePassword": "Cambiar contraseña",
+    "matchHistory": "Historial de Partidas",
+    "allMatches": "Todas",
+    "wins": "Victorias",
+    "losses": "Derrotas",
+    "totalGames": "Total de Juegos",
+    "winRate": "Tasa de Victoria",
+    "noMatches": "No se encontraron partidas",
+    "playFirst": "¡Juega algunas partidas para ver tu historial aquí!",
+    "rank": "Posición",
+    "score": "Puntuación",
+    "players": "Jugadores",
+    "winner": "Ganador",
+    "victory": "Victoria",
+    "defeat": "Derrota",
+    "mode": "Modo",
+    "loadingHistory": "Cargando historial...",
+    "saving": "Guardando...",
     "updated": "¡Perfil actualizado con éxito!",
     "updateFailed": "Error al actualizar el perfil",
     "invalidFileType": "Tipo de archivo inválido. Por favor sube una imagen.",
@@ -42,23 +93,34 @@
     "uploadingAvatar": "Subiendo avatar..."
   },
   "friends": {
-    "myFriends": "Mis Amigos",
-    "searchUsers": "Buscar usuarios...",
-    "addFriend": "Agregar amigo",
-    "removeFriend": "Eliminar",
+    "title": "Amigos",
+    "searchPlaceholder": "Buscar usuarios...",
+    "search": "Buscar",
+    "myFriends": "Tus Amigos",
+    "noFriends": "Aún no tienes amigos. ¡Busca usuarios para agregarlos!",
+    "addFriend": "Agregar Amigo",
+    "remove": "Eliminar",
     "onlineNow": "En línea ahora",
-    "lastSeen": "Visto recientemente",
-    "noFriends": "Aún no tienes amigos. ¡Busca usuarios para agregarlos!"
+    "lastSeen": "Visto recientemente"
   },
-  "common": {
-    "loading": "Cargando...",
-    "error": "Error",
-    "success": "Éxito",
-    "cancel": "Cancelar",
-    "delete": "Eliminar",
-    "edit": "Editar",
-    "save": "Guardar",
-    "search": "Buscar"
+  "ranking": {
+    "title": "Ranking Global",
+    "subtitle": "Compite con los maestros de trivia de todo el mundo",
+    "streak": "Racha Actual",
+    "points": "Puntos"
+  },
+  "shop": {
+    "title": "Tienda Triple Trouble",
+    "subtitle": "Próximamente: ¡Personaliza tu avatar y compra power-ups!",
+    "premiumAvatars": "Avatares Premium",
+    "powerUps": "Power-ups",
+    "uiThemes": "Temas de Interfaz"
+  },
+  "notFound": {
+    "title": "404",
+    "subtitle": "Página No Encontrada",
+    "message": "La página que buscas no existe o ha sido movida.",
+    "goHome": "Ir a Inicio"
   },
   "chat": {
     "title": "Mensajes",
@@ -101,7 +163,7 @@
     "finalScore": "Puntuación Final",
     "yourRank": "Tu Posición",
     "you": "tú",
-    "playAgain": "JUGAR DE NUEVO",
+    "playAgain": "Volver a la Sala",
     "backMenu": "Volver al Menú"
   },
   "lobby": {
