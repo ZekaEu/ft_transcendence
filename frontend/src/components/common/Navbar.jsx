@@ -105,7 +105,7 @@ export function Navbar() {
 
             <Link to="/profile" className="relative">
               <Avatar
-                src={user.avatar}
+                src={user.avatar_url}
                 alt={user.username}
                 size="md"
                 className="ring-2 ring-primary-500"

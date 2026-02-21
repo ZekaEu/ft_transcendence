@@ -146,7 +146,11 @@ def upload_avatar(user_id):
         os.makedirs(upload_folder, exist_ok=True)
 
         # Generate unique filename: user_id_uuid.ext
-        ext = secure_filename(file.filename).rsplit('.', 1)[1].lower()
+        original_filename = secure_filename(file.filename)
+        if '.' not in original_filename:
+            return jsonify({'message': 'Invalid filename - missing extension'}), 400
+        
+        ext = original_filename.rsplit('.', 1)[1].lower()
         filename = f"user_{user_id}_{uuid.uuid4().hex}.{ext}"
         filepath = os.path.join(upload_folder, filename)
 

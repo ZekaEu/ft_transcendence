@@ -11,7 +11,6 @@ function ProfilePage() {
   const [loading, setLoading] = useState(false)
   const [username, setUsername] = useState(user?.username || '')
   const [email, setEmail] = useState(user?.email || '')
-  const [displayName, setDisplayName] = useState(user?.display_name || '')
   const [bio, setBio] = useState(user?.bio || '')
   const [avatarPreview, setAvatarPreview] = useState(user?.avatar_url || '')
   const [avatarFile, setAvatarFile] = useState(null)
@@ -22,7 +21,6 @@ function ProfilePage() {
     if (user) {
       setUsername(user.username || '')
       setEmail(user.email || '')
-      setDisplayName(user.display_name || '')
       setBio(user.bio || '')
       setAvatarPreview(user.avatar_url || '')
     }
@@ -63,23 +61,20 @@ function ProfilePage() {
     setAvatarPreview('')
   }
 
-  const uploadAvatar = async () => {
-    if (!avatarFile || !user) return
+  const handleAvatarUpload = async (fileToUpload) => {
+    if (!fileToUpload || !user) return
 
-    setUploadingAvatar(true)
     try {
-      const response = await userService.uploadAvatar(user.id, avatarFile)
+      const response = await userService.uploadAvatar(user.id, fileToUpload)
       // Update preview with the server response
-      if (response.user) {
+      if (response.user && response.user.avatar_url) {
         setAvatarPreview(response.user.avatar_url)
       }
-      setAvatarFile(null)
-      toast.success(t('profile.updated'))
+      return true
     } catch (err) {
       console.error('Avatar upload error:', err)
       toast.error(err.message || t('profile.updateFailed'))
-    } finally {
-      setUploadingAvatar(false)
+      return false
     }
   }
 
@@ -94,16 +89,20 @@ function ProfilePage() {
       const updateData = {
         username: username.trim(),
         email: email.trim(),
-        display_name: displayName.trim(),
         bio: bio.trim(),
       }
 
       // Update profile fields
-      const response = await userService.updateProfile(user.id, updateData)
+      await userService.updateProfile(user.id, updateData)
 
-      // Update avatar if a new file was selected
+      // Upload avatar if a new file was selected
       if (avatarFile) {
-        await uploadAvatar()
+        setUploadingAvatar(true)
+        const uploadSuccess = await handleAvatarUpload(avatarFile)
+        if (uploadSuccess) {
+          setAvatarFile(null)
+        }
+        setUploadingAvatar(false)
       }
 
       // Refresh user data from server to sync auth context
@@ -122,8 +121,7 @@ function ProfilePage() {
 
   // Generate initials for default avatar
   const getInitials = () => {
-    const name = displayName || username
-    return name
+    return username
       .split(' ')
       .map(part => part[0])
       .join('')
@@ -143,7 +141,7 @@ function ProfilePage() {
               {avatarPreview ? (
                 <Avatar
                   src={avatarPreview}
-                  alt={displayName || username}
+                  alt={username}
                   size="lg"
                 />
               ) : (
@@ -159,22 +157,29 @@ function ProfilePage() {
             </div>
 
             <div className="space-y-3 flex-1">
-              <label className="block">
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={loading || uploadingAvatar}
-                >
-                  {t('profile.selectFile')}
-                </Button>
+              <div>
                 <input
+                  id="avatar-input"
                   type="file"
                   accept="image/*"
                   onChange={handleAvatarChange}
                   className="hidden"
                   disabled={loading || uploadingAvatar}
                 />
-              </label>
+                <label htmlFor="avatar-input" className="block">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={loading || uploadingAvatar}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      document.getElementById('avatar-input').click()
+                    }}
+                  >
+                    {t('profile.selectFile')}
+                  </Button>
+                </label>
+              </div>
 
               {avatarPreview && (
                 <Button
@@ -209,16 +214,6 @@ function ProfilePage() {
             required
             disabled={loading}
             placeholder="john@example.com"
-          />
-
-          {/* Display Name */}
-          <Input
-            label={t('profile.displayName')}
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
-            disabled={loading}
-            placeholder="John Doe"
-            maxLength="128"
           />
 
           {/* Bio */}
