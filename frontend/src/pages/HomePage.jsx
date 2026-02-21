@@ -124,47 +124,6 @@ function HomePage() {
         </div>
       </section>
 
-      {/* Categories */}
-      <section className="space-y-8">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <span className="material-icons-round text-secondary-500">category</span>
-            {t('home.categories')}
-          </h2>
-          <Link to="/lobby" className="text-primary-500 font-semibold hover:underline">
-            {t('home.viewAll')}
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          {[
-            { key: 'science', icon: 'science', color: 'from-blue-400 to-blue-600' },
-            { key: 'history', icon: 'history_edu', color: 'from-amber-400 to-amber-600' },
-            { key: 'geography', icon: 'public', color: 'from-green-400 to-green-600' },
-            { key: 'sports', icon: 'sports_soccer', color: 'from-red-400 to-red-600' },
-            { key: 'music', icon: 'music_note', color: 'from-purple-400 to-purple-600' },
-            { key: 'movies', icon: 'movie', color: 'from-pink-400 to-pink-600' },
-            { key: 'technology', icon: 'computer', color: 'from-cyan-400 to-cyan-600' },
-            { key: 'nature', icon: 'park', color: 'from-emerald-400 to-emerald-600' },
-            { key: 'gaming', icon: 'sports_esports', color: 'from-indigo-400 to-indigo-600' },
-            { key: 'art', icon: 'palette', color: 'from-rose-400 to-rose-600' },
-          ].map((cat) => (
-            <Link
-              key={cat.key}
-              to="/lobby"
-              className="group glass rounded-2xl p-5 hover:ring-2 hover:ring-primary-500/50 transition-all text-center space-y-3"
-            >
-              <div className={`w-12 h-12 mx-auto rounded-xl bg-gradient-to-br ${cat.color} flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform`}>
-                <span className="material-icons-round text-2xl">{cat.icon}</span>
-              </div>
-              <p className="text-sm font-bold text-slate-700 dark:text-slate-200">
-                {t(`lobby.cat_${cat.key}`)}
-              </p>
-            </Link>
-          ))}
-        </div>
-      </section>
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Achievements */}
         <div className="lg:col-span-2 glass rounded-2xl p-8 space-y-6">
