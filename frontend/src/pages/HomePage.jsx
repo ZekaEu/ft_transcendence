@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../hooks/useAuth'
 import apiClient from '../services/apiClient'
@@ -249,8 +249,6 @@ function AchievementCard({ title, description, icon, color }) {
 }
 
 function FriendItem({ name, status, avatar, online }) {
-  const navigate = useNavigate()
-
   return (
     <div className={`flex items-center justify-between ${!online ? 'opacity-60' : ''}`}>
       <div className="flex items-center gap-3">
