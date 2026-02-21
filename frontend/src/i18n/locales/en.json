@@ -5,8 +5,8 @@
     "ranking": "Ranking",
     "shop": "Shop",
     "profile": "Profile",
-    "friends": "Friends",
-    "level": "Level"
+    "level": "XP",
+    "friends": "Friends"
   },
   "footer": {
     "developedBy": "© 2026 Triple Trouble Trivia. Developed for ft_transcendence 42 Project."
@@ -105,7 +105,7 @@
     "finalScore": "Final Score",
     "yourRank": "Your Rank",
     "you": "you",
-    "playAgain": "PLAY AGAIN",
+    "playAgain": "Return to Lobby",
     "backMenu": "Back to Menu"
   },
   "ranking": {

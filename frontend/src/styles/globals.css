@@ -17,15 +17,35 @@
   }
 
   .input-base {
-    @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all;
+    @apply w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all;
   }
 
   .card {
-    @apply bg-white rounded-lg shadow-md p-6;
+    @apply bg-white rounded-lg shadow-md;
   }
 
   .card-hover {
-    @apply bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow cursor-pointer;
+    @apply bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer;
+  }
+
+  /* Dark variants */
+  .dark .input-base {
+    @apply bg-slate-800 border-slate-700 text-slate-200;
+  }
+
+  .dark .card {
+    @apply bg-slate-800 border border-slate-700;
+  }
+
+  .dark .card-hover {
+    @apply bg-slate-800 border border-slate-700;
+  }
+
+  /* Ensure native form elements follow dark theme when `.dark` is present */
+  .dark input,
+  .dark textarea,
+  .dark select {
+    @apply bg-slate-800 border-slate-700 text-slate-200;
   }
 }
 

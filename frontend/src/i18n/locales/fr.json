@@ -1,9 +1,14 @@
 {
   "navbar": {
     "home": "Accueil",
-    "friends": "Amis",
+    "chat": "Chat",
+    "ranking": "Classement",
+    "shop": "Boutique",
     "profile": "Profil",
-    "logout": "Déconnexion"
+    "level": "XP"
+  },
+  "footer": {
+    "developedBy": "© 2026 Triple Trouble Trivia. Développé pour le projet ft_transcendence de 42."
   },
   "auth": {
     "login": "Se connecter",
@@ -12,15 +17,45 @@
     "password": "Mot de passe",
     "username": "Nom d'utilisateur",
     "confirmPassword": "Confirmer le mot de passe",
-    "rememberMe": "Se souvenir de moi",
-    "forgotPassword": "Mot de passe oublié?",
     "noAccount": "Vous n'avez pas de compte?",
+    "signupNow": "S'inscrire maintenant",
     "haveAccount": "Vous avez déjà un compte?",
+    "loginNow": "Se connecter",
+    "creatingAccount": "Création du compte...",
+    "signingIn": "Connexion en cours...",
+    "passwordsDoNotMatch": "Les mots de passe ne correspondent pas",
+    "passwordMinLength": "Le mot de passe doit contenir au moins 8 caractères",
+    "accountCreated": "Compte créé avec succès!",
+    "signupFailed": "Échec de l'inscription",
     "continueWith42": "Continuer avec 42",
     "continueWithGoogle": "Continuer avec Google",
     "orContinueWith": "ou continuer avec email",
     "oauthFailed": "Échec de la connexion OAuth. Veuillez réessayer.",
     "success": "Connexion réussie !"
+  },
+  "home": {
+    "readyFor": "Prêt pour le ",
+    "challenge": "Défi?",
+    "heroSubtitle": "Affrontez vos amis en temps réel et montrez qui est le véritable maître de la trivia.",
+    "playNow": "JOUER MAINTENANT",
+    "playersOnline": "joueurs en ligne maintenant",
+    "gameModes": "Modes de Jeu",
+    "viewAll": "Voir tous",
+    "classic": "Classique",
+    "classicDesc": "10 questions de divers sujets. La précision est ce qui compte ici!",
+    "survival": "Survie",
+    "survivalDesc": "Répondez au maximum sans vous tromper. Le temps est votre plus grand ennemi.",
+    "timed": "Chronométré",
+    "timedDesc": "Battez la montre! Obtenez un maximum de points en 2 minutes.",
+    "recentAchievements": "Réalisations Récentes",
+    "triviaKing": "Roi de la Trivia",
+    "triviaKingDesc": "Gagné 10 matchs d'affilée",
+    "fastLearner": "Apprenti Rapide",
+    "fastLearnerDesc": "Complété le premier tutoriel",
+    "friends": "Amis En Ligne",
+    "playing": "En train de jouer",
+    "online": "En ligne",
+    "offline": "Hors ligne"
   },
   "profile": {
     "myProfile": "Mon Profil",
@@ -58,23 +93,34 @@
     "uploadingAvatar": "Téléchargement de l'avatar..."
   },
   "friends": {
-    "myFriends": "Mes Amis",
-    "searchUsers": "Rechercher des utilisateurs...",
-    "addFriend": "Ajouter un ami",
-    "removeFriend": "Supprimer",
+    "title": "Amis",
+    "searchPlaceholder": "Rechercher des utilisateurs...",
+    "search": "Rechercher",
+    "myFriends": "Vos Amis",
+    "noFriends": "Vous n'avez pas encore d'amis. Recherchez des utilisateurs pour les ajouter!",
+    "addFriend": "Ajouter un Ami",
+    "remove": "Supprimer",
     "onlineNow": "En ligne maintenant",
-    "lastSeen": "Vu récemment",
-    "noFriends": "Vous n'avez pas encore d'amis. Recherchez des utilisateurs pour les ajouter!"
+    "lastSeen": "Vu récemment"
   },
-  "common": {
-    "loading": "Chargement...",
-    "error": "Erreur",
-    "success": "Succès",
-    "cancel": "Annuler",
-    "delete": "Supprimer",
-    "edit": "Modifier",
-    "save": "Enregistrer",
-    "search": "Rechercher"
+  "ranking": {
+    "title": "Classement Global",
+    "subtitle": "Concourez avec les maîtres de trivia du monde entier",
+    "streak": "Série Actuelle",
+    "points": "Points"
+  },
+  "shop": {
+    "title": "Boutique Triple Trouble",
+    "subtitle": "Bientôt: Personnalisez votre avatar et achetez des power-ups!",
+    "premiumAvatars": "Avatars Premium",
+    "powerUps": "Power-ups",
+    "uiThemes": "Thèmes d'Interface"
+  },
+  "notFound": {
+    "title": "404",
+    "subtitle": "Page Non Trouvée",
+    "message": "La page que vous recherchez n'existe pas ou a été déplacée.",
+    "goHome": "Aller à l'Accueil"
   },
   "chat": {
     "title": "Messages",
@@ -117,7 +163,7 @@
     "finalScore": "Score Final",
     "yourRank": "Votre Rang",
     "you": "vous",
-    "playAgain": "REJOUER",
+    "playAgain": "Retour au Lobby",
     "backMenu": "Retour au Menu"
   },
   "lobby": {
