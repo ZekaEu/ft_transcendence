@@ -10,7 +10,7 @@ from app.game.models import GameRoom, GameRoomPlayer, get_questions, UserPowerup
 # In-memory game sessions: { room_id: { questions, current, scores, answered, time_per_question } }
 game_sessions = {}
 
-# Track socket connections: { sid: { user_id, room_id } }
+# Track socket connections: { sid: { user_id, room_id, is_spectator } }
 sid_map = {}
 
 TIME_PER_QUESTION = 15  # seconds
@@ -60,6 +60,7 @@ def handle_join_game_room(data):
     """Join a game room channel for real-time updates."""
     token = data.get('token')
     room_id = data.get('room_id')
+    is_spectator = data.get('spectator', False)
     if not token or not room_id:
         emit('error', {'message': 'token and room_id are required'})
         return
@@ -77,8 +78,33 @@ def handle_join_game_room(data):
         return
 
     join_room(f'game_{room_id}')
-    sid_map[request.sid] = {'user_id': user_id, 'room_id': room_id}
-    emit('player_joined', room.to_dict(), room=f'game_{room_id}')
+    sid_map[request.sid] = {'user_id': user_id, 'room_id': room_id, 'is_spectator': is_spectator}
+
+    if is_spectator:
+        # Send current game state to the spectator who just joined
+        session = game_sessions.get(room_id)
+        if session:
+            idx = session['current']
+            if idx < session['total']:
+                q = session['questions'][idx]
+                emit('new_question', {
+                    'index': idx,
+                    'total': session['total'],
+                    'question': q['question'],
+                    'options': q['options'],
+                    'category': q['category'],
+                    'difficulty': q.get('difficulty', 'medium'),
+                    'image': q.get('image'),
+                    'time': session['time_per_question'],
+                })
+            scoreboard = _build_scoreboard(room_id)
+            emit('scoreboard_update', {
+                'scoreboard': scoreboard,
+                'question_index': idx,
+            })
+        emit('spectator_joined', {'user_id': user_id, 'room_id': room_id})
+    else:
+        emit('player_joined', room.to_dict(), room=f'game_{room_id}')
 
 
 @socketio.on('leave_game_room', namespace='/game')
@@ -95,6 +121,10 @@ def handle_disconnect():
     """Remove disconnected player from active game session."""
     info = sid_map.pop(request.sid, None)
     if not info:
+        return
+
+    # Spectators don't affect game state
+    if info.get('is_spectator'):
         return
 
     user_id = info['user_id']
@@ -213,6 +243,12 @@ def _send_question(room_id):
 @socketio.on('submit_answer', namespace='/game')
 def handle_submit_answer(data):
     """Process a player's answer and calculate score."""
+    # Block spectators
+    info = sid_map.get(request.sid)
+    if info and info.get('is_spectator'):
+        emit('error', {'message': 'Spectators cannot submit answers'})
+        return
+
     user_id = _get_user_id(data)
     if not user_id:
         emit('error', {'message': 'Invalid token'})
@@ -287,6 +323,12 @@ def _next_question(room_id, app):
 def handle_use_powerup(data):
     """Use a power-up during a game question."""
     import random as _rnd
+
+    # Block spectators
+    info = sid_map.get(request.sid)
+    if info and info.get('is_spectator'):
+        emit('error', {'message': 'Spectators cannot use powerups'})
+        return
 
     user_id = _get_user_id(data)
     if not user_id:

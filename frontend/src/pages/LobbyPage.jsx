@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import i18n from '../i18n'
 import toast from 'react-hot-toast'
@@ -148,6 +148,15 @@ function LobbyPage() {
         }
     }
 
+    const handleSpectate = async (roomId) => {
+        try {
+            const room = await gameService.spectateRoom(roomId)
+            navigate(`/game?spectate=${room.id}`)
+        } catch (err) {
+            toast.error(err.response?.data?.message || t('lobby.spectateFailed'))
+        }
+    }
+
     // If user is inside a room, show the room detail view
     if (activeRoom) {
         return <RoomDetail
@@ -208,6 +217,7 @@ function LobbyPage() {
                             key={room.id}
                             room={room}
                             onJoin={handleJoin}
+                            onSpectate={handleSpectate}
                             userId={user?.id}
                             t={t}
                         />
@@ -230,9 +240,10 @@ function LobbyPage() {
 // ──────────────────────────────────────────────
 // Room Card
 // ──────────────────────────────────────────────
-function RoomCard({ room, onJoin, userId, t }) {
+function RoomCard({ room, onJoin, onSpectate, userId, t }) {
     const isFull = room.player_count >= room.max_players
     const isInRoom = room.players?.some((p) => p.user_id === userId)
+    const isPlaying = room.status === 'playing'
 
     return (
         <div className="glass rounded-2xl p-5 border border-white/10 hover:border-primary-500/30 transition-all group">
@@ -241,22 +252,30 @@ function RoomCard({ room, onJoin, userId, t }) {
                     <h3 className="font-bold text-lg truncate text-slate-800 dark:text-white">
                         {room.name}
                     </h3>
-                    <span className="inline-flex items-center gap-1 mt-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-gradient-to-r from-primary-500 to-primary-600 text-white">
-                        <span className="material-icons-round text-sm">{CATEGORY_ICONS[room.question_category] || 'quiz'}</span>
-                        {t(`lobby.cat_${room.question_category}`, { defaultValue: room.question_category || 'Any' })}
-                    </span>
-                    {room.question_difficulty && room.question_difficulty !== 'any' && (
-                        <span className={`inline-flex items-center gap-1 mt-1 ml-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-gradient-to-r ${DIFFICULTY_COLORS[room.question_difficulty] || DIFFICULTY_COLORS.any} text-white`}>
-                            <span className="material-icons-round text-sm">{DIFFICULTY_ICONS[room.question_difficulty] || 'help'}</span>
-                            {t(`lobby.diff_${room.question_difficulty}`, { defaultValue: room.question_difficulty })}
+                    <div className="flex flex-wrap gap-1 mt-1">
+                        {isPlaying && (
+                            <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-gradient-to-r from-red-500 to-rose-600 text-white animate-pulse">
+                                <span className="material-icons-round text-sm">play_circle</span>
+                                {t('lobby.inProgress')}
+                            </span>
+                        )}
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-gradient-to-r from-primary-500 to-primary-600 text-white">
+                            <span className="material-icons-round text-sm">{CATEGORY_ICONS[room.question_category] || 'quiz'}</span>
+                            {t(`lobby.cat_${room.question_category}`, { defaultValue: room.question_category || 'Any' })}
                         </span>
-                    )}
-                    {room.friends_only && (
-                        <span className="inline-flex items-center gap-1 mt-1 ml-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
-                            <span className="material-icons-round text-sm">group</span>
-                            {t('lobby.friendsOnly')}
-                        </span>
-                    )}
+                        {room.question_difficulty && room.question_difficulty !== 'any' && (
+                            <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-gradient-to-r ${DIFFICULTY_COLORS[room.question_difficulty] || DIFFICULTY_COLORS.any} text-white`}>
+                                <span className="material-icons-round text-sm">{DIFFICULTY_ICONS[room.question_difficulty] || 'help'}</span>
+                                {t(`lobby.diff_${room.question_difficulty}`, { defaultValue: room.question_difficulty })}
+                            </span>
+                        )}
+                        {room.friends_only && (
+                            <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
+                                <span className="material-icons-round text-sm">group</span>
+                                {t('lobby.friendsOnly')}
+                            </span>
+                        )}
+                    </div>
                 </div>
                 <div className="flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-full">
                     <span className="material-icons-round text-base">people</span>
@@ -288,18 +307,28 @@ function RoomCard({ room, onJoin, userId, t }) {
                 )}
             </div>
 
-            <button
-                onClick={() => onJoin(room.id)}
-                disabled={isFull || isInRoom}
-                className={`w-full py-2.5 rounded-xl font-bold text-sm transition-all ${isFull
-                    ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
-                    : isInRoom
-                        ? 'bg-green-100 dark:bg-green-900/30 text-green-600 cursor-default'
-                        : 'bg-gradient-to-r from-primary-500 to-primary-600 text-white hover:opacity-90 shadow-lg shadow-primary-500/20'
+            {isPlaying ? (
+                <button
+                    onClick={() => onSpectate(room.id)}
+                    className="w-full py-2.5 rounded-xl font-bold text-sm transition-all bg-gradient-to-r from-purple-500 to-indigo-600 text-white hover:opacity-90 shadow-lg shadow-purple-500/20 flex items-center justify-center gap-2"
+                >
+                    <span className="material-icons-round text-base">visibility</span>
+                    {t('lobby.spectate')}
+                </button>
+            ) : (
+                <button
+                    onClick={() => onJoin(room.id)}
+                    disabled={isFull || isInRoom}
+                    className={`w-full py-2.5 rounded-xl font-bold text-sm transition-all ${isFull
+                        ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
+                        : isInRoom
+                            ? 'bg-green-100 dark:bg-green-900/30 text-green-600 cursor-default'
+                            : 'bg-gradient-to-r from-primary-500 to-primary-600 text-white hover:opacity-90 shadow-lg shadow-primary-500/20'
                     }`}
-            >
-                {isFull ? t('lobby.full') : isInRoom ? t('lobby.joined') : t('lobby.join')}
-            </button>
+                >
+                    {isFull ? t('lobby.full') : isInRoom ? t('lobby.joined') : t('lobby.join')}
+                </button>
+            )}
         </div>
     )
 }

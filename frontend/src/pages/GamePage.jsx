@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../hooks/useAuth'
 import { gameService } from '../services/gameService'
@@ -16,6 +16,10 @@ function GamePage() {
     const { t } = useTranslation()
     const { user } = useAuth()
     const navigate = useNavigate()
+    const [searchParams] = useSearchParams()
+
+    const spectateRoomId = searchParams.get('spectate')
+    const [isSpectator, setIsSpectator] = useState(!!spectateRoomId)
 
     const [phase, setPhase] = useState('loading') // loading, question, feedback, results
     const [question, setQuestion] = useState(null)
@@ -37,23 +41,34 @@ function GamePage() {
     useEffect(() => {
         const init = async () => {
             try {
-                const currentRoom = await gameService.getCurrentRoom()
-                if (currentRoom && currentRoom.status === 'playing') {
-                    setRoom(currentRoom)
+                if (spectateRoomId) {
+                    // Spectator mode — fetch room via getRoom
+                    const roomData = await gameService.getRoom(spectateRoomId)
+                    if (roomData && roomData.status === 'playing') {
+                        setRoom(roomData)
+                        setIsSpectator(true)
+                    } else {
+                        navigate('/lobby')
+                    }
                 } else {
-                    navigate('/lobby')
+                    const currentRoom = await gameService.getCurrentRoom()
+                    if (currentRoom && currentRoom.status === 'playing') {
+                        setRoom(currentRoom)
+                    } else {
+                        navigate('/lobby')
+                    }
+                    // Load powerup inventory (only for players)
+                    const invRes = await gameService.getInventory()
+                    const inv = {}
+                    ;(invRes.inventory || []).forEach((r) => { inv[r.powerup_type] = r.quantity })
+                    setPowerups(inv)
                 }
-                // Load powerup inventory
-                const invRes = await gameService.getInventory()
-                const inv = {}
-                ;(invRes.inventory || []).forEach((r) => { inv[r.powerup_type] = r.quantity })
-                setPowerups(inv)
             } catch {
                 navigate('/lobby')
             }
         }
         init()
-    }, [navigate])
+    }, [navigate, spectateRoomId])
 
     // ── Socket connection ─────────────────
     useEffect(() => {
@@ -62,7 +77,7 @@ function GamePage() {
         if (!token) return
 
         const socket = gameService.connectSocket(token)
-        gameService.joinGameRoom(room.id, token)
+        gameService.joinGameRoom(room.id, token, isSpectator)
 
         gameService.onNewQuestion((data) => {
             setQuestion(data)
@@ -128,12 +143,12 @@ function GamePage() {
             gameService.offError()
             gameService.disconnectSocket()
         }
-    }, [room])
+    }, [room, isSpectator])
 
     // ── Countdown timer ───────────────────
     useEffect(() => {
         if (phase !== 'question' || timeLeft <= 0) {
-            if (phase === 'question' && timeLeft <= 0 && selectedAnswer === null) {
+            if (phase === 'question' && timeLeft <= 0 && selectedAnswer === null && !isSpectator) {
                 // Time expired without answering
                 setLastResult({ correct: false, correct_answer: question?.answer, points: 0, total_score: myScore })
                 setStreak(0)
@@ -162,16 +177,18 @@ function GamePage() {
 
     // ── Handle answer ─────────────────────
     const handleAnswer = useCallback((index) => {
+        if (isSpectator) return
         if (phase !== 'question' || selectedAnswer !== null) return
         setSelectedAnswer(index)
         clearInterval(timerRef.current)
 
         const token = localStorage.getItem('authToken')
         gameService.submitAnswer(room.id, index, timeLeft, token)
-    }, [phase, selectedAnswer, room, timeLeft])
+    }, [isSpectator, phase, selectedAnswer, room, timeLeft])
 
     // ── Handle powerup usage ─────────────
     const handleUsePowerup = useCallback((type) => {
+        if (isSpectator) return
         if (phase !== 'question' || selectedAnswer !== null) return
         if (usedThisQuestion[type]) return
         if (!powerups[type] || powerups[type] <= 0) return
@@ -179,7 +196,7 @@ function GamePage() {
         const token = localStorage.getItem('authToken')
         gameService.usePowerup(room.id, type, token)
         setUsedThisQuestion((prev) => ({ ...prev, [type]: true }))
-    }, [phase, selectedAnswer, room, powerups, usedThisQuestion])
+    }, [isSpectator, phase, selectedAnswer, room, powerups, usedThisQuestion])
 
     // ── Loading state ─────────────────────
     if (phase === 'loading' || !room) {
@@ -193,11 +210,19 @@ function GamePage() {
 
     // ── Results screen ────────────────────
     if (phase === 'results') {
-        return <ResultsView scoreboard={scoreboard} user={user} room={room} navigate={navigate} t={t} />
+        return <ResultsView scoreboard={scoreboard} user={user} room={room} navigate={navigate} t={t} isSpectator={isSpectator} />
     }
 
     return (
         <div className="flex flex-col items-center justify-center min-h-[70vh]">
+            {/* Spectator Banner */}
+            {isSpectator && (
+                <div className="w-full max-w-3xl mb-6 flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-purple-500/10 to-indigo-500/10 border border-purple-500/30">
+                    <span className="material-icons-round text-purple-500">visibility</span>
+                    <span className="font-bold text-purple-600 dark:text-purple-400">{t('game.spectating')}</span>
+                </div>
+            )}
+
             {/* Timer Bar */}
             <div className="w-full max-w-3xl mb-12">
                 <div className="flex justify-between items-end mb-2">
@@ -271,7 +296,7 @@ function GamePage() {
                                 color={ANSWER_COLORS[i]}
                                 onClick={() => handleAnswer(i)}
                                 state={state}
-                                disabled={phase !== 'question' || selectedAnswer !== null || isEliminated}
+                                disabled={isSpectator || phase !== 'question' || selectedAnswer !== null || isEliminated}
                                 eliminated={isEliminated}
                                 highlighted={isHighlighted}
                             />
@@ -280,8 +305,8 @@ function GamePage() {
                 </div>
             )}
 
-            {/* Power-up Buttons */}
-            {question && phase === 'question' && selectedAnswer === null && (
+            {/* Power-up Buttons (hidden for spectators) */}
+            {!isSpectator && question && phase === 'question' && selectedAnswer === null && (
                 <div className="flex items-center justify-center gap-3 mb-8">
                     {/* Eliminate Two */}
                     {(powerups.eliminate_two > 0 || usedThisQuestion.eliminate_two) && (
@@ -327,26 +352,28 @@ function GamePage() {
 
             {/* Bottom Stats */}
             <div className="w-full flex flex-wrap items-center justify-between gap-6 pt-8 border-t border-slate-200 dark:border-slate-800">
-                <div className="flex items-center gap-4">
-                    <div className="flex flex-col">
-                        <span className="text-[10px] uppercase font-bold text-slate-400 tracking-widest">{t('game.score')}</span>
-                        <span className="text-2xl font-black text-primary-500">{myScore.toLocaleString()}</span>
+                {!isSpectator && (
+                    <div className="flex items-center gap-4">
+                        <div className="flex flex-col">
+                            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-widest">{t('game.score')}</span>
+                            <span className="text-2xl font-black text-primary-500">{myScore.toLocaleString()}</span>
+                        </div>
+                        <div className="w-px h-8 bg-slate-200 dark:bg-slate-800" />
+                        <div className="flex flex-col">
+                            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-widest">{t('game.combo')}</span>
+                            <span className="text-2xl font-black text-orange-500 flex items-center gap-1">
+                                {streak} <span className="material-icons-round text-sm">local_fire_department</span>
+                            </span>
+                        </div>
                     </div>
-                    <div className="w-px h-8 bg-slate-200 dark:bg-slate-800" />
-                    <div className="flex flex-col">
-                        <span className="text-[10px] uppercase font-bold text-slate-400 tracking-widest">{t('game.combo')}</span>
-                        <span className="text-2xl font-black text-orange-500 flex items-center gap-1">
-                            {streak} <span className="material-icons-round text-sm">local_fire_department</span>
-                        </span>
-                    </div>
-                </div>
+                )}
 
                 {/* Mini scoreboard */}
                 {scoreboard.length > 0 && (
                     <div className="flex items-center gap-2">
                         {scoreboard.slice(0, 4).map((p, i) => (
                             <div key={p.user_id} className="flex items-center gap-1 text-sm" title={`${p.display_name}: ${p.score}`}>
-                                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary-400 to-secondary-400 flex items-center justify-center text-white text-xs font-bold border border-white dark:border-slate-900">
+                                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary-400 to-secondary-400 flex items-center justify-center text-xs font-bold border dark:border-slate-900">
                                     {p.avatar_url ? (
                                         <img src={p.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
                                     ) : (
@@ -360,8 +387,8 @@ function GamePage() {
                 )}
             </div>
 
-            {/* Feedback Overlay */}
-            {phase === 'feedback' && lastResult && (
+            {/* Feedback Overlay (hidden for spectators) */}
+            {!isSpectator && phase === 'feedback' && lastResult && (
                 <div className="fixed bottom-6 flex flex-col items-center gap-2 animate-in fade-in slide-in-from-bottom-4">
                     <div className={`flex items-center gap-2 font-bold text-lg ${lastResult.correct ? 'text-green-500' : 'text-red-500'}`}>
                         <span className="material-icons-round text-2xl">{lastResult.correct ? 'check_circle' : 'cancel'}</span>
