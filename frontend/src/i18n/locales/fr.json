@@ -111,10 +111,23 @@
   },
   "shop": {
     "title": "Boutique Triple Trouble",
-    "subtitle": "Bientôt: Personnalisez votre avatar et achetez des power-ups!",
+    "subtitle": "Dépensez vos XP pour des boosts puissants!",
     "premiumAvatars": "Avatars Premium",
     "powerUps": "Power-ups",
-    "uiThemes": "Thèmes d'Interface"
+    "uiThemes": "Thèmes d'Interface",
+    "yourBalance": "Votre Solde",
+    "buy": "Acheter",
+    "buying": "Achat en cours...",
+    "owned": "Possédé",
+    "inventory": "Votre Inventaire",
+    "loading": "Chargement de la boutique...",
+    "notEnoughXP": "XP insuffisant",
+    "purchaseSuccess": "Achat réussi!",
+    "purchaseFailed": "Échec de l'achat",
+    "powerup_eliminate_two": "Éliminer Deux",
+    "powerup_eliminate_two_desc": "Supprime 2 mauvaises réponses de la question",
+    "powerup_show_answer": "Montrer la Réponse",
+    "powerup_show_answer_desc": "Révèle la bonne réponse"
   },
   "notFound": {
     "title": "404",
@@ -164,7 +177,9 @@
     "yourRank": "Votre Rang",
     "you": "vous",
     "playAgain": "Retour au Lobby",
-    "backMenu": "Retour au Menu"
+    "backMenu": "Retour au Menu",
+    "eliminate50": "Éliminer 2",
+    "showAnswer": "Montrer la Réponse"
   },
   "lobby": {
     "title": "Salles de Jeu",

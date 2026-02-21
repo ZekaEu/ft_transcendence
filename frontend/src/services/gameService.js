@@ -21,6 +21,22 @@ export const gameService = {
     return response.data
   },
 
+  // ── Shop ──────────────────────────────────
+  getShopCatalogue: async () => {
+    const response = await apiClient.get('/game/shop/catalogue')
+    return response.data
+  },
+
+  buyPowerup: async (powerup_type, quantity = 1) => {
+    const response = await apiClient.post('/game/shop/buy', { powerup_type, quantity })
+    return response.data
+  },
+
+  getInventory: async () => {
+    const response = await apiClient.get('/game/shop/inventory')
+    return response.data
+  },
+
   // ── Rooms ────────────────────────────────
   getCurrentRoom: async () => {
     const response = await apiClient.get('/game/rooms/current')
@@ -126,6 +142,10 @@ export const gameService = {
     gameSocket?.emit('time_expired', { room_id: roomId, token })
   },
 
+  usePowerup: (roomId, powerupType, token) => {
+    gameSocket?.emit('use_powerup', { room_id: roomId, powerup_type: powerupType, token })
+  },
+
   // ── Event listeners ─────────────────────
   onPlayerJoined: (callback) => {
     gameSocket?.on('player_joined', callback)
@@ -155,6 +175,10 @@ export const gameService = {
     gameSocket?.on('game_finished', callback)
   },
 
+  onPowerupResult: (callback) => {
+    gameSocket?.on('powerup_result', callback)
+  },
+
   onError: (callback) => {
     gameSocket?.on('error', callback)
   },
@@ -167,5 +191,6 @@ export const gameService = {
   offAnswerResult: () => gameSocket?.off('answer_result'),
   offScoreboardUpdate: () => gameSocket?.off('scoreboard_update'),
   offGameFinished: () => gameSocket?.off('game_finished'),
+  offPowerupResult: () => gameSocket?.off('powerup_result'),
   offError: () => gameSocket?.off('error'),
 }

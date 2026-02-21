@@ -103,7 +103,7 @@ export function Navbar() {
               <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
                 {user.username}
               </p>
-              <p className="text-sm font-bold text-primary-500">{t('navbar.level')} {user.level || 1}</p>
+              <p className="text-sm font-bold text-primary-500">{user.xp ?? 0} XP</p>
             </div>
 
             <Link to="/profile" className="relative">

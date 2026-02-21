@@ -496,6 +496,48 @@ def get_questions(count=10, category=None, difficulty=None, language=None):
     return selected
 
 
+class UserPowerup(db.Model):
+    """Tracks power-ups owned by a user (purchased from the shop)."""
+    __tablename__ = 'user_powerups'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    powerup_type = db.Column(db.String(32), nullable=False)  # eliminate_two, show_answer
+    quantity = db.Column(db.Integer, nullable=False, default=0)
+
+    user = db.relationship('User', backref=db.backref('powerups', lazy='dynamic'))
+
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'powerup_type', name='uq_user_powerup'),
+    )
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'powerup_type': self.powerup_type,
+            'quantity': self.quantity,
+        }
+
+    def __repr__(self):
+        return f'<UserPowerup user={self.user_id} type={self.powerup_type} qty={self.quantity}>'
+
+
+# Power-up catalogue: type -> {cost, name, description, icon}
+POWERUP_CATALOGUE = {
+    'eliminate_two': {
+        'cost': 500,
+        'name': 'Eliminate Two',
+        'icon': 'remove_circle',
+    },
+    'show_answer': {
+        'cost': 1000,
+        'name': 'Show Answer',
+        'icon': 'visibility',
+    },
+}
+
+
 class GameRoom(db.Model):
     """A game room that players can join before a match starts."""
     __tablename__ = 'game_rooms'

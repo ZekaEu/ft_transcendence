@@ -185,6 +185,26 @@ CREATE TABLE IF NOT EXISTS game_room_players (
 
 
 -- ─────────────────────────────────────────────
+-- User power-ups (shop inventory)
+-- ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS user_powerups (
+    id              INT AUTO_INCREMENT PRIMARY KEY,
+    user_id         INT             NOT NULL,
+    powerup_type    VARCHAR(32)     NOT NULL,
+    quantity        INT             NOT NULL DEFAULT 0,
+
+    CONSTRAINT fk_powerup_user
+        FOREIGN KEY (user_id) REFERENCES users(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT uq_user_powerup
+        UNIQUE (user_id, powerup_type),
+
+    INDEX idx_powerup_user (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- ─────────────────────────────────────────────
 -- Friendships
 -- ─────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS friendships (

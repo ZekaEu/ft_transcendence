@@ -5,7 +5,7 @@ from app.game import game_bp
 from app.core.extensions import db, socketio
 from app.auth.models import User
 from app.game.models import GameRoom, GameRoomPlayer, KAHOOT_CATEGORIES, KAHOOT_LANGUAGES, VALID_DIFFICULTIES
-from app.game.models import GameRoom, GameRoomPlayer
+from app.game.models import GameRoom, GameRoomPlayer, UserPowerup, POWERUP_CATALOGUE
 from app.friends.models import Friendship
 
 
@@ -433,4 +433,86 @@ def match_history():
             'losses': losses,
             'win_rate': round((wins / total_games) * 100, 1) if total_games > 0 else 0,
         },
+    }), 200
+
+
+# ──────────────────────────────────────────────
+# Shop – catalogue
+# ──────────────────────────────────────────────
+@game_bp.route('/shop/catalogue', methods=['GET'])
+@jwt_required()
+def shop_catalogue():
+    """Return the power-up catalogue with prices."""
+    items = []
+    for ptype, info in POWERUP_CATALOGUE.items():
+        items.append({
+            'type': ptype,
+            'name': info['name'],
+            'cost': info['cost'],
+            'icon': info['icon'],
+        })
+    return jsonify({'items': items}), 200
+
+
+# ──────────────────────────────────────────────
+# Shop – buy power-up
+# ──────────────────────────────────────────────
+@game_bp.route('/shop/buy', methods=['POST'])
+@jwt_required()
+def shop_buy():
+    """Purchase a power-up using XP."""
+    user_id = int(get_jwt_identity())
+    data = request.get_json() or {}
+    powerup_type = data.get('powerup_type')
+    quantity = data.get('quantity', 1)
+
+    if not powerup_type or powerup_type not in POWERUP_CATALOGUE:
+        return jsonify({'error': 'Invalid powerup type'}), 400
+
+    if not isinstance(quantity, int) or quantity < 1:
+        return jsonify({'error': 'Quantity must be a positive integer'}), 400
+
+    cost_each = POWERUP_CATALOGUE[powerup_type]['cost']
+    total_cost = cost_each * quantity
+
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
+    if (user.xp or 0) < total_cost:
+        return jsonify({'error': 'Not enough XP', 'required': total_cost, 'current': user.xp or 0}), 400
+
+    # Deduct XP
+    user.xp = (user.xp or 0) - total_cost
+
+    # Add or update powerup inventory
+    record = UserPowerup.query.filter_by(user_id=user_id, powerup_type=powerup_type).first()
+    if record:
+        record.quantity += quantity
+    else:
+        record = UserPowerup(user_id=user_id, powerup_type=powerup_type, quantity=quantity)
+        db.session.add(record)
+
+    db.session.commit()
+
+    return jsonify({
+        'message': f'Purchased {quantity}x {powerup_type}',
+        'powerup': record.to_dict(),
+        'xp_remaining': user.xp,
+    }), 200
+
+
+# ──────────────────────────────────────────────
+# Shop – inventory (user's power-ups)
+# ──────────────────────────────────────────────
+@game_bp.route('/shop/inventory', methods=['GET'])
+@jwt_required()
+def shop_inventory():
+    """Return the current user's power-up inventory."""
+    user_id = int(get_jwt_identity())
+    records = UserPowerup.query.filter_by(user_id=user_id).all()
+    user = User.query.get(user_id)
+    return jsonify({
+        'inventory': [r.to_dict() for r in records],
+        'xp': user.xp if user else 0,
     }), 200

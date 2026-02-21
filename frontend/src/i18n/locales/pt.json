@@ -106,7 +106,9 @@
         "yourRank": "Sua Posição",
         "you": "você",
         "playAgain": "Voltar para o Lobby",
-        "backMenu": "Voltar ao Menu"
+        "backMenu": "Voltar ao Menu",
+        "eliminate50": "Eliminar 2",
+        "showAnswer": "Mostrar Resposta"
     },
     "ranking": {
         "title": "Ranking Global",
@@ -122,10 +124,23 @@
     },
     "shop": {
         "title": "Loja Triple Trouble",
-        "subtitle": "Em breve: Personalize seu avatar e compre power-ups!",
+        "subtitle": "Gaste seu XP em boosts poderosos!",
         "premiumAvatars": "Avatares Premium",
         "powerUps": "Power-ups",
-        "uiThemes": "Temas de Interface"
+        "uiThemes": "Temas de Interface",
+        "yourBalance": "Seu Saldo",
+        "buy": "Comprar",
+        "buying": "Comprando...",
+        "owned": "Possui",
+        "inventory": "Seu Inventário",
+        "loading": "Carregando loja...",
+        "notEnoughXP": "XP insuficiente",
+        "purchaseSuccess": "Compra realizada!",
+        "purchaseFailed": "Falha na compra",
+        "powerup_eliminate_two": "Eliminar Duas",
+        "powerup_eliminate_two_desc": "Remove 2 respostas erradas da pergunta",
+        "powerup_show_answer": "Mostrar Resposta",
+        "powerup_show_answer_desc": "Revela a resposta correta"
     },
     "profile": {
         "myProfile": "Meu Perfil",

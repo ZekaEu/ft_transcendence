@@ -5,7 +5,7 @@ import eventlet
 
 from app.core.extensions import socketio, db
 from app.auth.models import User
-from app.game.models import GameRoom, GameRoomPlayer, get_questions
+from app.game.models import GameRoom, GameRoomPlayer, get_questions, UserPowerup, POWERUP_CATALOGUE
 
 # In-memory game sessions: { room_id: { questions, current, scores, answered, time_per_question } }
 game_sessions = {}
@@ -285,6 +285,78 @@ def _next_question(room_id, app):
             _end_game(room_id)
         else:
             _send_question(room_id)
+
+
+@socketio.on('use_powerup', namespace='/game')
+def handle_use_powerup(data):
+    """Use a power-up during a game question."""
+    import random as _rnd
+
+    user_id = _get_user_id(data)
+    if not user_id:
+        emit('error', {'message': 'Invalid token'})
+        return
+
+    room_id = data.get('room_id')
+    powerup_type = data.get('powerup_type')
+
+    if not room_id or not powerup_type:
+        emit('error', {'message': 'room_id and powerup_type are required'})
+        return
+
+    if powerup_type not in POWERUP_CATALOGUE:
+        emit('error', {'message': 'Invalid powerup type'})
+        return
+
+    session = game_sessions.get(room_id)
+    if not session:
+        emit('error', {'message': 'No active game session'})
+        return
+
+    # Prevent using powerup if already answered
+    q_idx = session['current']
+    answered_set = session['answered'].get(q_idx, set())
+    if user_id in answered_set:
+        emit('error', {'message': 'Already answered this question'})
+        return
+
+    # Track which powerups were used this question (prevent double-use per question)
+    used_key = f'{q_idx}_{user_id}_{powerup_type}'
+    if 'used_powerups' not in session:
+        session['used_powerups'] = set()
+    if used_key in session['used_powerups']:
+        emit('error', {'message': 'Already used this powerup for this question'})
+        return
+
+    # Check inventory
+    record = UserPowerup.query.filter_by(user_id=user_id, powerup_type=powerup_type).first()
+    if not record or record.quantity < 1:
+        emit('error', {'message': 'You do not own this powerup'})
+        return
+
+    q = session['questions'][q_idx]
+    correct_index = q['answer']
+
+    result = {'powerup_type': powerup_type, 'success': True}
+
+    if powerup_type == 'eliminate_two':
+        # Pick 2 random wrong answers to remove
+        wrong_indices = [i for i in range(len(q['options'])) if i != correct_index]
+        eliminated = _rnd.sample(wrong_indices, min(2, len(wrong_indices)))
+        result['eliminated'] = eliminated
+
+    elif powerup_type == 'show_answer':
+        result['correct_index'] = correct_index
+
+    # Deduct from inventory
+    record.quantity -= 1
+    if record.quantity <= 0:
+        db.session.delete(record)
+    db.session.commit()
+
+    session['used_powerups'].add(used_key)
+
+    emit('powerup_result', result)
 
 
 @socketio.on('time_expired', namespace='/game')

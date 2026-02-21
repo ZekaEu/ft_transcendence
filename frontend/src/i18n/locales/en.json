@@ -106,7 +106,9 @@
     "yourRank": "Your Rank",
     "you": "you",
     "playAgain": "Return to Lobby",
-    "backMenu": "Back to Menu"
+    "backMenu": "Back to Menu",
+    "eliminate50": "Remove 2 Answers",
+    "showAnswer": "Show Answer"
   },
   "ranking": {
     "title": "Global Ranking",
@@ -122,10 +124,23 @@
   },
   "shop": {
     "title": "Triple Trouble Shop",
-    "subtitle": "Coming Soon: Customize your avatar and buy power-ups!",
+    "subtitle": "Spend your XP on powerful game boosts!",
     "premiumAvatars": "Premium Avatars",
     "powerUps": "Power-ups",
-    "uiThemes": "UI Themes"
+    "uiThemes": "UI Themes",
+    "yourBalance": "Your Balance",
+    "buy": "Buy Now",
+    "buying": "Buying...",
+    "owned": "Owned",
+    "inventory": "Your Inventory",
+    "loading": "Loading shop...",
+    "notEnoughXP": "Not enough XP",
+    "purchaseSuccess": "Purchase successful!",
+    "purchaseFailed": "Purchase failed",
+    "powerup_eliminate_two": "Eliminate Two",
+    "powerup_eliminate_two_desc": "Remove 2 wrong answers from the question",
+    "powerup_show_answer": "Show Answer",
+    "powerup_show_answer_desc": "Reveals the correct answer"
   },
   "profile": {
     "myProfile": "My Profile",
