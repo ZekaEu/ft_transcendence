@@ -31,7 +31,7 @@ function ProfilePage() {
   // Validate file before preview
   const validateFile = (file) => {
     const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp']
-    const maxSize = 5 * 1024 * 1024 // 5MB
+    const maxSize = 10 * 1024 * 1024 // 10MB
 
     if (!allowedTypes.includes(file.type)) {
       toast.error(t('profile.invalidFileType'))
@@ -117,7 +117,18 @@ function ProfilePage() {
       return true
     } catch (err) {
       console.error('Avatar upload error:', err)
-      toast.error(err.message || t('profile.updateFailed'))
+      // Handle timeout specifically
+      if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
+        toast.error(t('profile.uploadTimeout') || 'Upload timed out. File may be too large.')
+      } else if (err.response?.status === 413) {
+        // Show the server's detailed error message if available
+        const serverMessage = err.response?.data?.message
+        toast.error(serverMessage || t('profile.fileTooLarge') || 'File is too large for upload.')
+      } else {
+        // Show server error message if available, otherwise fallback
+        const serverMessage = err.response?.data?.message
+        toast.error(serverMessage || err.message || t('profile.updateFailed'))
+      }
       return false
     }
   }
@@ -156,9 +167,8 @@ function ProfilePage() {
       if (avatarFile) {
         setUploadingAvatar(true)
         const uploadSuccess = await handleAvatarUpload(avatarFile)
-        if (uploadSuccess) {
-          setAvatarFile(null)
-        }
+        // Always clear the file to remove the overlay, regardless of success
+        setAvatarFile(null)
         setUploadingAvatar(false)
       }
 
@@ -206,7 +216,7 @@ function ProfilePage() {
                   {getInitials()}
                 </div>
               )}
-              {avatarFile && (
+              {avatarFile && uploadingAvatar && (
                 <div className="absolute inset-0 rounded-full bg-black/20 flex items-center justify-center">
                   <span className="text-white text-sm font-medium">{t('profile.uploadingAvatar')}</span>
                 </div>
