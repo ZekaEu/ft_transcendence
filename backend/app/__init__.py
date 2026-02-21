@@ -34,6 +34,9 @@ def create_app(config_class=Config):
     from app.friends import friends_bp
     app.register_blueprint(friends_bp, url_prefix='/api/friends')
 
+    from app.memory import memory_bp
+    app.register_blueprint(memory_bp, url_prefix='/api/memory')
+
     # ── Static files (uploads) ───────────────
     upload_folder = app.config['UPLOAD_FOLDER']
     os.makedirs(upload_folder, exist_ok=True)
@@ -52,6 +55,7 @@ def create_app(config_class=Config):
         from app.chat import models as chat_models  # noqa: F401
         from app.game import models as game_models  # noqa: F401
         from app.friends import models as friends_models  # noqa: F401
+        from app.memory import models as memory_models  # noqa: F401
         db.create_all()
 
     # ── JWT error handlers ──────────────────
@@ -70,6 +74,13 @@ def create_app(config_class=Config):
     @jwt.revoked_token_loader
     def revoked_token_callback(jwt_header, jwt_payload):
         return {'message': 'Token has been revoked', 'error': 'token_revoked'}, 401
+
+    # ── Error handlers ──────────────────────
+    @app.errorhandler(413)
+    def request_entity_too_large(error):
+        """Handle file too large errors"""
+        max_size_mb = int(app.config.get('MAX_CONTENT_LENGTH', 5 * 1024 * 1024) / (1024 * 1024))
+        return {'message': f'File too large. Maximum size: {max_size_mb}MB', 'error': 'file_too_large'}, 413
 
     # ── Health check ────────────────────────
     @app.route('/api/health')

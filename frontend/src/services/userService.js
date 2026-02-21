@@ -21,6 +21,7 @@ export const userService = {
       headers: {
         'Content-Type': undefined, // Let browser/axios set it automatically
       },
+      timeout: 60000, // 60 second timeout for file uploads (larger than default)
     })
     return response.data
   },

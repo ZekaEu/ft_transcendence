@@ -17,6 +17,7 @@ import LeaderboardPage from './pages/LeaderboardPage'
 import LobbyPage from './pages/LobbyPage'
 import ShopPage from './pages/ShopPage'
 import ChatPage from './pages/ChatPage'
+import MemoryGamePage from './pages/MemoryGamePage'
 import NotFoundPage from './pages/NotFoundPage'
 
 function App() {
@@ -96,6 +97,17 @@ function App() {
                 <ProtectedRoute>
                   <MainLayout>
                     <GamePage />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/memory/play"
+              element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <MemoryGamePage />
                   </MainLayout>
                 </ProtectedRoute>
               }

@@ -16,8 +16,12 @@ export const gameService = {
   },
 
   // ── Match History ────────────────────────
-  getMatchHistory: async (filter = 'all') => {
-    const response = await apiClient.get('/game/history', { params: { filter } })
+  getMatchHistory: async (filter = 'all', gameType = 'all') => {
+    const params = { filter }
+    if (gameType && gameType !== 'all') {
+      params.game_type = gameType
+    }
+    const response = await apiClient.get('/game/history', { params })
     return response.data
   },
 

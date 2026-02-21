@@ -1,46 +1,41 @@
 from flask import request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
-from app.game import game_bp
+from app.memory import memory_bp
 from app.core.extensions import db, socketio
 from app.auth.models import User
-from app.game.models import (
-    GameRoom, GameRoomPlayer, MatchHistory, UserPowerup, POWERUP_CATALOGUE,
-    KAHOOT_CATEGORIES, KAHOOT_LANGUAGES, VALID_DIFFICULTIES, ACHIEVEMENTS_CATALOGUE,
+from app.game.models import UserPowerup, POWERUP_CATALOGUE
+from app.memory.models import (
+    MemoryGameRoom, MemoryGamePlayer,
+    VALID_THEMES, VALID_BOARD_SIZES, MEMORY_POWERUP_CATALOGUE,
 )
-from app.memory.models import MemoryGameRoom
 from app.friends.models import Friendship
 
 
 # ──────────────────────────────────────────────
-# Available Kahoot trivia categories, difficulties & languages
+# Memory game metadata (themes, board sizes)
 # ──────────────────────────────────────────────
-@game_bp.route('/trivia/categories', methods=['GET'])
+@memory_bp.route('/meta', methods=['GET'])
 @jwt_required()
-def trivia_categories():
-    categories = [
-        {'key': k, 'label': k.replace('_', ' ').title()} for k in KAHOOT_CATEGORIES.keys()
-    ]
-    difficulties = list(VALID_DIFFICULTIES)
-    languages = [
-        {'key': k, 'label': v or 'Any'} for k, v in KAHOOT_LANGUAGES.items()
-    ]
-    return jsonify({'categories': categories, 'difficulties': difficulties, 'languages': languages}), 200
+def memory_meta():
+    themes = [{'key': k, 'label': k.replace('_', ' ').title()} for k in VALID_THEMES]
+    sizes = [{'key': k, 'label': k.title()} for k in VALID_BOARD_SIZES]
+    return jsonify({'themes': themes, 'board_sizes': sizes}), 200
 
 
 # ──────────────────────────────────────────────
-# Get the current user's active room (waiting/playing)
+# Get the current user's active memory room
 # ──────────────────────────────────────────────
-@game_bp.route('/rooms/current', methods=['GET'])
+@memory_bp.route('/rooms/current', methods=['GET'])
 @jwt_required()
 def current_room():
     user_id = int(get_jwt_identity())
     player = (
-        GameRoomPlayer.query
-        .join(GameRoom)
+        MemoryGamePlayer.query
+        .join(MemoryGameRoom)
         .filter(
-            GameRoomPlayer.user_id == user_id,
-            GameRoom.status.in_(['waiting', 'playing']),
+            MemoryGamePlayer.user_id == user_id,
+            MemoryGameRoom.status.in_(['waiting', 'playing']),
         )
         .first()
     )
@@ -50,16 +45,15 @@ def current_room():
 
 
 # ──────────────────────────────────────────────
-# List available rooms (waiting + playing)
+# List available memory rooms
 # ──────────────────────────────────────────────
-@game_bp.route('/rooms', methods=['GET'])
+@memory_bp.route('/rooms', methods=['GET'])
 @jwt_required()
 def list_rooms():
     user_id = int(get_jwt_identity())
-    query = GameRoom.query.filter(GameRoom.status.in_(['waiting', 'playing']))
-    rooms = query.order_by(GameRoom.created_at.desc()).all()
+    query = MemoryGameRoom.query.filter(MemoryGameRoom.status.in_(['waiting', 'playing']))
+    rooms = query.order_by(MemoryGameRoom.created_at.desc()).all()
 
-    # Filter out friends_only rooms where user is not friends with host
     visible_rooms = []
     for room in rooms:
         if not room.friends_only:
@@ -81,9 +75,9 @@ def list_rooms():
 
 
 # ──────────────────────────────────────────────
-# Create a room
+# Create a memory room
 # ──────────────────────────────────────────────
-@game_bp.route('/rooms', methods=['POST'])
+@memory_bp.route('/rooms', methods=['POST'])
 @jwt_required()
 def create_room():
     user_id = int(get_jwt_identity())
@@ -91,50 +85,43 @@ def create_room():
 
     name = (data.get('name') or '').strip()
     max_players = data.get('max_players', 4)
-    question_category = data.get('question_category', 'any')
-    question_difficulty = data.get('question_difficulty', 'any')
-    question_language = data.get('question_language', 'any')
+    board_size = data.get('board_size', 'medium')
+    theme = data.get('theme', 'animals')
     friends_only = bool(data.get('friends_only', False))
 
     if not name:
         return jsonify({'message': 'Room name is required'}), 400
 
-    if question_category not in KAHOOT_CATEGORIES:
-        return jsonify({'message': 'Invalid question category'}), 400
+    if board_size not in VALID_BOARD_SIZES:
+        return jsonify({'message': 'Invalid board size'}), 400
 
-    if question_difficulty not in VALID_DIFFICULTIES:
-        return jsonify({'message': 'Invalid question difficulty'}), 400
-
-    if question_language not in KAHOOT_LANGUAGES:
-        return jsonify({'message': 'Invalid question language'}), 400
+    if theme not in VALID_THEMES:
+        return jsonify({'message': 'Invalid theme'}), 400
 
     max_players = min(max(int(max_players), 2), 8)
 
-    # Check if user is already in a waiting room
+    # Check if user is already in a waiting memory room
     existing = (
-        GameRoomPlayer.query
-        .join(GameRoom)
-        .filter(GameRoomPlayer.user_id == user_id, GameRoom.status == 'waiting')
+        MemoryGamePlayer.query
+        .join(MemoryGameRoom)
+        .filter(MemoryGamePlayer.user_id == user_id, MemoryGameRoom.status == 'waiting')
         .first()
     )
     if existing:
-        return jsonify({'message': 'You are already in a room. Leave it first.'}), 409
+        return jsonify({'message': 'You are already in a memory room. Leave it first.'}), 409
 
-    room = GameRoom(
+    room = MemoryGameRoom(
         name=name,
         host_id=user_id,
-        game_mode='classic',
+        board_size=board_size,
+        theme=theme,
         max_players=max_players,
-        question_category=question_category,
-        question_difficulty=question_difficulty,
-        question_language=question_language,
         friends_only=friends_only,
     )
     db.session.add(room)
     db.session.flush()
 
-    # Host auto-joins
-    player = GameRoomPlayer(room_id=room.id, user_id=user_id)
+    player = MemoryGamePlayer(room_id=room.id, user_id=user_id)
     db.session.add(player)
     db.session.commit()
 
@@ -144,23 +131,23 @@ def create_room():
 # ──────────────────────────────────────────────
 # Get room details
 # ──────────────────────────────────────────────
-@game_bp.route('/rooms/<int:room_id>', methods=['GET'])
+@memory_bp.route('/rooms/<int:room_id>', methods=['GET'])
 @jwt_required()
 def get_room(room_id):
-    room = GameRoom.query.get(room_id)
+    room = MemoryGameRoom.query.get(room_id)
     if not room:
         return jsonify({'message': 'Room not found'}), 404
     return jsonify(room.to_dict()), 200
 
 
 # ──────────────────────────────────────────────
-# Join a room
+# Join a memory room
 # ──────────────────────────────────────────────
-@game_bp.route('/rooms/<int:room_id>/join', methods=['POST'])
+@memory_bp.route('/rooms/<int:room_id>/join', methods=['POST'])
 @jwt_required()
 def join_room(room_id):
     user_id = int(get_jwt_identity())
-    room = GameRoom.query.get(room_id)
+    room = MemoryGameRoom.query.get(room_id)
 
     if not room:
         return jsonify({'message': 'Room not found'}), 404
@@ -171,7 +158,6 @@ def join_room(room_id):
     if room.player_count >= room.max_players:
         return jsonify({'message': 'Room is full'}), 400
 
-    # Enforce friends_only: joiner must be friends with host
     if room.friends_only and room.host_id != user_id:
         is_friend = Friendship.query.filter(
             db.or_(
@@ -181,40 +167,37 @@ def join_room(room_id):
             Friendship.status == 'accepted',
         ).first()
         if not is_friend:
-            return jsonify({'message': 'This room is friends-only. You must be friends with the host.'}), 403
+            return jsonify({'message': 'This room is friends-only.'}), 403
 
-    # Check if already in this room
     if room.players.filter_by(user_id=user_id).first():
         return jsonify(room.to_dict()), 200
 
-    # Check if in another waiting room
     existing = (
-        GameRoomPlayer.query
-        .join(GameRoom)
-        .filter(GameRoomPlayer.user_id == user_id, GameRoom.status == 'waiting')
+        MemoryGamePlayer.query
+        .join(MemoryGameRoom)
+        .filter(MemoryGamePlayer.user_id == user_id, MemoryGameRoom.status == 'waiting')
         .first()
     )
     if existing:
         return jsonify({'message': 'You are already in another room. Leave it first.'}), 409
 
-    player = GameRoomPlayer(room_id=room.id, user_id=user_id)
+    player = MemoryGamePlayer(room_id=room.id, user_id=user_id)
     db.session.add(player)
     db.session.commit()
 
-    # Notify existing players in real-time
-    socketio.emit('room_updated', room.to_dict(), namespace='/game', room=f'game_{room_id}')
+    socketio.emit('room_updated', room.to_dict(), namespace='/memory', room=f'memory_{room_id}')
 
     return jsonify(room.to_dict()), 200
 
 
 # ──────────────────────────────────────────────
-# Leave a room
+# Leave a memory room
 # ──────────────────────────────────────────────
-@game_bp.route('/rooms/<int:room_id>/leave', methods=['POST'])
+@memory_bp.route('/rooms/<int:room_id>/leave', methods=['POST'])
 @jwt_required()
 def leave_room(room_id):
     user_id = int(get_jwt_identity())
-    room = GameRoom.query.get(room_id)
+    room = MemoryGameRoom.query.get(room_id)
 
     if not room:
         return jsonify({'message': 'Room not found'}), 404
@@ -226,9 +209,8 @@ def leave_room(room_id):
     db.session.delete(player)
 
     room_deleted = False
-    # If host leaves, delete the room (or transfer host)
     if room.host_id == user_id:
-        remaining = room.players.filter(GameRoomPlayer.user_id != user_id).first()
+        remaining = room.players.filter(MemoryGamePlayer.user_id != user_id).first()
         if remaining:
             room.host_id = remaining.user_id
         else:
@@ -237,9 +219,8 @@ def leave_room(room_id):
 
     db.session.commit()
 
-    # Notify remaining players via socket
     if not room_deleted:
-        socketio.emit('room_updated', room.to_dict(), namespace='/game', room=f'game_{room_id}')
+        socketio.emit('room_updated', room.to_dict(), namespace='/memory', room=f'memory_{room_id}')
 
     return jsonify({'message': 'Left room successfully'}), 200
 
@@ -247,11 +228,11 @@ def leave_room(room_id):
 # ──────────────────────────────────────────────
 # Toggle ready status
 # ──────────────────────────────────────────────
-@game_bp.route('/rooms/<int:room_id>/ready', methods=['POST'])
+@memory_bp.route('/rooms/<int:room_id>/ready', methods=['POST'])
 @jwt_required()
 def toggle_ready(room_id):
     user_id = int(get_jwt_identity())
-    room = GameRoom.query.get(room_id)
+    room = MemoryGameRoom.query.get(room_id)
 
     if not room or room.status != 'waiting':
         return jsonify({'message': 'Room not found or not accepting'}), 404
@@ -263,20 +244,19 @@ def toggle_ready(room_id):
     player.is_ready = not player.is_ready
     db.session.commit()
 
-    # Notify all players in the room
-    socketio.emit('room_updated', room.to_dict(), namespace='/game', room=f'game_{room_id}')
+    socketio.emit('room_updated', room.to_dict(), namespace='/memory', room=f'memory_{room_id}')
 
     return jsonify(room.to_dict()), 200
 
 
 # ──────────────────────────────────────────────
-# Start game (host only)
+# Start memory game (host only)
 # ──────────────────────────────────────────────
-@game_bp.route('/rooms/<int:room_id>/start', methods=['POST'])
+@memory_bp.route('/rooms/<int:room_id>/start', methods=['POST'])
 @jwt_required()
 def start_game(room_id):
     user_id = int(get_jwt_identity())
-    room = GameRoom.query.get(room_id)
+    room = MemoryGameRoom.query.get(room_id)
 
     if not room:
         return jsonify({'message': 'Room not found'}), 404
@@ -297,12 +277,12 @@ def start_game(room_id):
 
 
 # ──────────────────────────────────────────────
-# Spectate a playing room
+# Spectate a playing memory room
 # ──────────────────────────────────────────────
-@game_bp.route('/rooms/<int:room_id>/spectate', methods=['POST'])
+@memory_bp.route('/rooms/<int:room_id>/spectate', methods=['POST'])
 @jwt_required()
 def spectate_room(room_id):
-    room = GameRoom.query.get(room_id)
+    room = MemoryGameRoom.query.get(room_id)
     if not room:
         return jsonify({'message': 'Room not found'}), 404
 
@@ -313,104 +293,13 @@ def spectate_room(room_id):
 
 
 # ──────────────────────────────────────────────
-# Global ranking (sorted by XP)
+# Memory shop catalogue (memory-specific powerups)
 # ──────────────────────────────────────────────
-@game_bp.route('/ranking', methods=['GET'])
+@memory_bp.route('/shop/catalogue', methods=['GET'])
 @jwt_required()
-def global_ranking():
-    """Return all users sorted by XP descending."""
-    limit = request.args.get('limit', 50, type=int)
-    limit = min(max(limit, 1), 200)
-
-    users = (
-        User.query
-        .filter(User.xp > 0)
-        .order_by(User.xp.desc())
-        .limit(limit)
-        .all()
-    )
-
-    ranking = []
-    for idx, u in enumerate(users):
-        # Count finished games for this user (both trivia + memory)
-        games_played = MatchHistory.query.filter_by(user_id=u.id).count()
-        ranking.append({
-            'rank': idx + 1,
-            'user_id': u.id,
-            'username': u.username,
-            'display_name': u.display_name or u.username,
-            'avatar_url': u.avatar_url,
-            'xp': u.xp,
-            'level': u.level,
-            'games_played': games_played,
-        })
-
-    return jsonify(ranking), 200
-
-
-# ──────────────────────────────────────────────
-# Match history for the logged-in user
-# ──────────────────────────────────────────────
-@game_bp.route('/history', methods=['GET'])
-@jwt_required()
-def match_history():
-    user_id = int(get_jwt_identity())
-    filter_type = request.args.get('filter', 'all')      # all | wins | losses
-    game_type = request.args.get('game_type', 'all')      # all | trivia | memory
-
-    # Base query
-    query = MatchHistory.query.filter_by(user_id=user_id)
-
-    # Filter by game type
-    if game_type in ('trivia', 'memory'):
-        query = query.filter_by(game_type=game_type)
-
-    all_matches = query.order_by(MatchHistory.played_at.desc()).all()
-
-    # Build stats from ALL matches (before win/loss filtering)
-    total_games = len(all_matches)
-    wins = sum(1 for m in all_matches if m.is_winner)
-    losses = total_games - wins
-
-    # Apply win/loss filter
-    matches = []
-    for m in all_matches:
-        if filter_type == 'wins' and not m.is_winner:
-            continue
-        if filter_type == 'losses' and m.is_winner:
-            continue
-
-        matches.append({
-            'room_id': m.room_id,
-            'room_name': m.room_name,
-            'game_type': m.game_type,
-            'score': m.score,
-            'rank': m.rank,
-            'total_players': m.total_players,
-            'is_winner': m.is_winner,
-            'played_at': m.played_at.isoformat() if m.played_at else None,
-        })
-
-    return jsonify({
-        'matches': matches,
-        'stats': {
-            'total': total_games,
-            'wins': wins,
-            'losses': losses,
-            'win_rate': round((wins / total_games) * 100, 1) if total_games > 0 else 0,
-        },
-    }), 200
-
-
-# ──────────────────────────────────────────────
-# Shop – catalogue
-# ──────────────────────────────────────────────
-@game_bp.route('/shop/catalogue', methods=['GET'])
-@jwt_required()
-def shop_catalogue():
-    """Return the power-up catalogue with prices."""
+def memory_shop_catalogue():
     items = []
-    for ptype, info in POWERUP_CATALOGUE.items():
+    for ptype, info in MEMORY_POWERUP_CATALOGUE.items():
         items.append({
             'type': ptype,
             'name': info['name'],
@@ -421,24 +310,23 @@ def shop_catalogue():
 
 
 # ──────────────────────────────────────────────
-# Shop – buy power-up
+# Memory shop – buy power-up
 # ──────────────────────────────────────────────
-@game_bp.route('/shop/buy', methods=['POST'])
+@memory_bp.route('/shop/buy', methods=['POST'])
 @jwt_required()
-def shop_buy():
-    """Purchase a power-up using XP."""
+def memory_shop_buy():
     user_id = int(get_jwt_identity())
     data = request.get_json() or {}
     powerup_type = data.get('powerup_type')
     quantity = data.get('quantity', 1)
 
-    if not powerup_type or powerup_type not in POWERUP_CATALOGUE:
+    if not powerup_type or powerup_type not in MEMORY_POWERUP_CATALOGUE:
         return jsonify({'error': 'Invalid powerup type'}), 400
 
     if not isinstance(quantity, int) or quantity < 1:
         return jsonify({'error': 'Quantity must be a positive integer'}), 400
 
-    cost_each = POWERUP_CATALOGUE[powerup_type]['cost']
+    cost_each = MEMORY_POWERUP_CATALOGUE[powerup_type]['cost']
     total_cost = cost_each * quantity
 
     user = User.query.get(user_id)
@@ -448,10 +336,8 @@ def shop_buy():
     if (user.xp or 0) < total_cost:
         return jsonify({'error': 'Not enough XP', 'required': total_cost, 'current': user.xp or 0}), 400
 
-    # Deduct XP
     user.xp = (user.xp or 0) - total_cost
 
-    # Add or update powerup inventory
     record = UserPowerup.query.filter_by(user_id=user_id, powerup_type=powerup_type).first()
     if record:
         record.quantity += quantity
@@ -469,89 +355,20 @@ def shop_buy():
 
 
 # ──────────────────────────────────────────────
-# Shop – inventory (user's power-ups)
+# Memory shop – inventory
 # ──────────────────────────────────────────────
-@game_bp.route('/shop/inventory', methods=['GET'])
+@memory_bp.route('/shop/inventory', methods=['GET'])
 @jwt_required()
-def shop_inventory():
-    """Return the current user's power-up inventory (trivia only)."""
+def memory_shop_inventory():
     user_id = int(get_jwt_identity())
-    trivia_types = list(POWERUP_CATALOGUE.keys())
+    # Return only memory-related powerups
+    memory_types = list(MEMORY_POWERUP_CATALOGUE.keys())
     records = UserPowerup.query.filter(
         UserPowerup.user_id == user_id,
-        UserPowerup.powerup_type.in_(trivia_types),
+        UserPowerup.powerup_type.in_(memory_types),
     ).all()
     user = User.query.get(user_id)
     return jsonify({
         'inventory': [r.to_dict() for r in records],
         'xp': user.xp if user else 0,
     }), 200
-
-
-# ──────────────────────────────────────────────
-# Achievements
-# ──────────────────────────────────────────────
-@game_bp.route('/achievements', methods=['GET'])
-@jwt_required()
-def get_achievements():
-    """Dynamically compute achievements based on user stats."""
-    user_id = int(get_jwt_identity())
-    user = User.query.get(user_id)
-    if not user:
-        return jsonify({'error': 'User not found'}), 404
-
-    xp = user.xp or 0
-
-    # Use unified match_history for games and wins
-    games_played = MatchHistory.query.filter_by(user_id=user_id).count()
-    wins = MatchHistory.query.filter_by(user_id=user_id, is_winner=True).count()
-
-    friend_count = Friendship.query.filter(
-        db.or_(Friendship.user_id == user_id, Friendship.friend_id == user_id),
-        Friendship.status == 'accepted',
-    ).count()
-
-    # Count rooms created across both game types
-    rooms_created = (
-        GameRoom.query.filter_by(host_id=user_id).count()
-        + MemoryGameRoom.query.filter_by(host_id=user_id).count()
-    )
-
-    # Multiplayer: played in a match with 3+ or 5+ players
-    played_3_plus = MatchHistory.query.filter(
-        MatchHistory.user_id == user_id,
-        MatchHistory.total_players >= 3,
-    ).first() is not None
-
-    played_5_plus = MatchHistory.query.filter(
-        MatchHistory.user_id == user_id,
-        MatchHistory.total_players >= 5,
-    ).first() is not None
-
-    # Map category → current value
-    stat_map = {
-        'xp': xp,
-        'games': games_played,
-        'wins': wins,
-        'social': friend_count,
-        'rooms': rooms_created,
-    }
-
-    unlocked = []
-    locked = []
-    for key, meta in ACHIEVEMENTS_CATALOGUE.items():
-        entry = {'key': key, 'icon': meta['icon'], 'category': meta['category']}
-        # Multiplayer achievements use boolean flags
-        if key == 'play_3_plus':
-            is_unlocked = played_3_plus
-        elif key == 'play_5_plus':
-            is_unlocked = played_5_plus
-        else:
-            is_unlocked = stat_map.get(meta['category'], 0) >= meta['threshold']
-
-        if is_unlocked:
-            unlocked.append(entry)
-        else:
-            locked.append(entry)
-
-    return jsonify({'unlocked': unlocked, 'locked': locked}), 200

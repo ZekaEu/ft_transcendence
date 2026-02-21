@@ -31,7 +31,7 @@ function ProfilePage() {
   // Validate file before preview
   const validateFile = (file) => {
     const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp']
-    const maxSize = 5 * 1024 * 1024 // 5MB
+    const maxSize = 10 * 1024 * 1024 // 10MB
 
     if (!allowedTypes.includes(file.type)) {
       toast.error(t('profile.invalidFileType'))
@@ -48,6 +48,7 @@ function ProfilePage() {
 
   // Match history state
   const [historyFilter, setHistoryFilter] = useState('all')
+  const [gameTypeFilter, setGameTypeFilter] = useState('all')
   const [matches, setMatches] = useState([])
   const [stats, setStats] = useState({ total: 0, wins: 0, losses: 0, win_rate: 0 })
   const [loadingHistory, setLoadingHistory] = useState(true)
@@ -61,7 +62,7 @@ function ProfilePage() {
     const fetchHistory = async () => {
       setLoadingHistory(true)
       try {
-        const data = await gameService.getMatchHistory(historyFilter)
+        const data = await gameService.getMatchHistory(historyFilter, gameTypeFilter)
         setMatches(data.matches || [])
         setStats(data.stats || { total: 0, wins: 0, losses: 0, win_rate: 0 })
       } catch (err) {
@@ -71,7 +72,7 @@ function ProfilePage() {
       }
     }
     fetchHistory()
-  }, [historyFilter])
+  }, [historyFilter, gameTypeFilter])
 
   // Fetch achievements
   useEffect(() => {
@@ -117,7 +118,18 @@ function ProfilePage() {
       return true
     } catch (err) {
       console.error('Avatar upload error:', err)
-      toast.error(err.message || t('profile.updateFailed'))
+      // Handle timeout specifically
+      if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
+        toast.error(t('profile.uploadTimeout') || 'Upload timed out. File may be too large.')
+      } else if (err.response?.status === 413) {
+        // Show the server's detailed error message if available
+        const serverMessage = err.response?.data?.message
+        toast.error(serverMessage || t('profile.fileTooLarge') || 'File is too large for upload.')
+      } else {
+        // Show server error message if available, otherwise fallback
+        const serverMessage = err.response?.data?.message
+        toast.error(serverMessage || err.message || t('profile.updateFailed'))
+      }
       return false
     }
   }
@@ -156,9 +168,8 @@ function ProfilePage() {
       if (avatarFile) {
         setUploadingAvatar(true)
         const uploadSuccess = await handleAvatarUpload(avatarFile)
-        if (uploadSuccess) {
-          setAvatarFile(null)
-        }
+        // Always clear the file to remove the overlay, regardless of success
+        setAvatarFile(null)
         setUploadingAvatar(false)
       }
 
@@ -206,7 +217,7 @@ function ProfilePage() {
                   {getInitials()}
                 </div>
               )}
-              {avatarFile && (
+              {avatarFile && uploadingAvatar && (
                 <div className="absolute inset-0 rounded-full bg-black/20 flex items-center justify-center">
                   <span className="text-white text-sm font-medium">{t('profile.uploadingAvatar')}</span>
                 </div>
@@ -326,7 +337,26 @@ function ProfilePage() {
           </div>
         </div>
 
-        {/* Filter Tabs */}
+        {/* Game Type Filter */}
+        <div className="flex gap-2 mb-4">
+          {['all', 'trivia', 'memory'].map((gType) => (
+            <button
+              key={gType}
+              onClick={() => setGameTypeFilter(gType)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                gameTypeFilter === gType
+                  ? 'bg-indigo-600 text-white shadow-sm'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              {gType === 'all' && t('profile.allGames')}
+              {gType === 'trivia' && t('profile.trivia')}
+              {gType === 'memory' && t('profile.memory')}
+            </button>
+          ))}
+        </div>
+
+        {/* Win/Loss Filter Tabs */}
         <div className="flex gap-2 mb-6 border-b border-gray-200 pb-4">
           {['all', 'wins', 'losses'].map((filter) => (
             <button
@@ -387,6 +417,13 @@ function ProfilePage() {
                           : 'bg-red-100 text-red-700'
                       }`}>
                         {match.is_winner ? t('profile.victory') : t('profile.defeat')}
+                      </span>
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full font-medium ${
+                        match.game_type === 'trivia'
+                          ? 'bg-purple-100 text-purple-700'
+                          : 'bg-cyan-100 text-cyan-700'
+                      }`}>
+                        {match.game_type === 'trivia' ? '🧠 ' + t('profile.trivia') : '🃏 ' + t('profile.memory')}
                       </span>
                       <span className="capitalize">{t('profile.players')}: {match.total_players}</span>
                     </div>

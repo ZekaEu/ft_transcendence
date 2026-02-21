@@ -106,18 +106,20 @@ function HomePage() {
           </p>
         </div>
 
-        <div className="flex flex-col items-center">
-          <Link
-            to="/lobby"
-            className="group relative px-12 py-6 bg-gradient-to-br from-[#0ea5e9] to-[#0369a1] text-white rounded-2xl font-black text-3xl juicy-shadow hover:scale-105 active:scale-95 transition-all duration-200 flex items-center gap-4"
-          >
-            <span className="material-icons-round text-4xl">play_arrow</span>
-            {t('home.playNow')}
-            <div className="absolute -top-3 -right-3 bg-yellow-400 text-yellow-900 text-xs px-2 py-1 rounded-full animate-bounce font-bold shadow-sm">
-              +XP
-            </div>
-          </Link>
-          <div className="mt-6 flex items-center gap-2 text-slate-400 dark:text-slate-500">
+        <div className="flex flex-col items-center gap-6">
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            <Link
+              to="/lobby"
+              className="group relative px-12 py-6 bg-gradient-to-br from-[#0ea5e9] to-[#0369a1] text-white rounded-2xl font-black text-3xl juicy-shadow hover:scale-105 active:scale-95 transition-all duration-200 flex items-center gap-4"
+            >
+              <span className="material-icons-round text-4xl">play_arrow</span>
+              {t('home.playNow')}
+              <div className="absolute -top-3 -right-3 bg-yellow-400 text-yellow-900 text-xs px-2 py-1 rounded-full animate-bounce font-bold shadow-sm">
+                +XP
+              </div>
+            </Link>
+          </div>
+          <div className="flex items-center gap-2 text-slate-400 dark:text-slate-500">
             <span className="material-icons-round text-sm">group</span>
             <span className="text-sm font-semibold">{onlineCount.toLocaleString()} {t('home.playersOnline')}</span>
           </div>

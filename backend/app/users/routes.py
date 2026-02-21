@@ -130,14 +130,15 @@ def upload_avatar(user_id):
             'message': 'Invalid file type. Allowed types: ' + ', '.join(current_app.config['ALLOWED_EXTENSIONS'])
         }), 400
 
-    # Validate file size (Flask MAX_CONTENT_LENGTH handles this, but we can add extra check)
+    # Validate file size
     file.seek(0, os.SEEK_END)
     file_size = file.tell()
     file.seek(0)
 
-    if file_size > current_app.config['MAX_CONTENT_LENGTH']:
+    max_file_size = current_app.config.get('MAX_FILE_SIZE', 10 * 1024 * 1024)
+    if file_size > max_file_size:
         return jsonify({
-            'message': f'File too large. Maximum size: {current_app.config["MAX_CONTENT_LENGTH"] // (1024*1024)}MB'
+            'message': f'File too large. Maximum size: {max_file_size // (1024*1024)}MB'
         }), 413
 
     try:
