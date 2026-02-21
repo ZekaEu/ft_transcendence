@@ -34,6 +34,7 @@ function GamePage() {
     const [eliminatedIndices, setEliminatedIndices] = useState([])
     const [highlightedAnswer, setHighlightedAnswer] = useState(null)
     const [powerups, setPowerups] = useState({})   // { eliminate_two: qty, show_answer: qty }
+    const [imageLoading, setImageLoading] = useState(false)
     const [usedThisQuestion, setUsedThisQuestion] = useState({}) // { type: true }
     const timerRef = useRef(null)
 
@@ -88,6 +89,7 @@ function GamePage() {
             setEliminatedIndices([])
             setHighlightedAnswer(null)
             setUsedThisQuestion({})
+            setImageLoading(!!data.image)
             setPhase('question')
         })
 
@@ -262,12 +264,21 @@ function GamePage() {
                     {/* Kahoot question image */}
                     {question.image && (
                         <div className="mt-6 flex justify-center">
-                            <img
-                                src={question.image}
-                                alt=""
-                                className="max-h-64 max-w-full rounded-xl object-contain shadow-lg border border-white/10"
-                                onError={(e) => { e.target.style.display = 'none' }}
-                            />
+                            <div className="relative inline-block">
+                                {imageLoading && (
+                                    <div className="flex flex-col items-center justify-center gap-2 py-10 px-16">
+                                        <div className="w-8 h-8 border-3 border-primary-500 border-t-transparent rounded-full animate-spin" />
+                                        <span className="text-xs font-medium text-slate-400">{t('game.loadingImage')}</span>
+                                    </div>
+                                )}
+                                <img
+                                    src={question.image}
+                                    alt=""
+                                    className={`max-h-64 max-w-full rounded-xl object-contain shadow-lg border border-white/10 transition-opacity duration-300 ${imageLoading ? 'absolute opacity-0 w-0 h-0' : 'opacity-100'}`}
+                                    onLoad={() => setImageLoading(false)}
+                                    onError={(e) => { setImageLoading(false); e.target.style.display = 'none' }}
+                                />
+                            </div>
                         </div>
                     )}
                 </div>
