@@ -71,6 +71,13 @@ def create_app(config_class=Config):
     def revoked_token_callback(jwt_header, jwt_payload):
         return {'message': 'Token has been revoked', 'error': 'token_revoked'}, 401
 
+    # ── Error handlers ──────────────────────
+    @app.errorhandler(413)
+    def request_entity_too_large(error):
+        """Handle file too large errors"""
+        max_size_mb = int(app.config.get('MAX_CONTENT_LENGTH', 5 * 1024 * 1024) / (1024 * 1024))
+        return {'message': f'File too large. Maximum size: {max_size_mb}MB', 'error': 'file_too_large'}, 413
+
     # ── Health check ────────────────────────
     @app.route('/api/health')
     def health_check():
