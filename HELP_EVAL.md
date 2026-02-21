@@ -46,4 +46,9 @@ SELECT CONCAT(COUNT(*),' conquistas prontas') AS resultado
 FROM game_room_players WHERE user_id=@uid;
 " 2>&1
 
+docker exec trivia_mysql mysql -u triviauser -ptriviapass triviadb -e "
+UPDATE users SET xp = FLOOR(RAND() * 50000) + 100 WHERE email LIKE '_ab%@bot';
+SELECT username, xp FROM users ORDER BY xp DESC;
+" 2>&1
+
 email@email.com

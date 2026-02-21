@@ -1,4 +1,3 @@
-import React, { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../hooks/useAuth'
 import { useChat } from '../../hooks/useChat'
@@ -7,12 +6,6 @@ export function ChatMessages() {
 	const { t } = useTranslation()
 	const { user } = useAuth()
 	const { messages, typingUsers, activeRoom } = useChat()
-	const bottomRef = useRef(null)
-
-	// Auto-scroll to bottom when messages change or room changes
-	useEffect(() => {
-		bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-	}, [messages, activeRoom])
 
 	const formatTime = (isoStr) => {
 		if (!isoStr) return ''
@@ -121,9 +114,6 @@ export function ChatMessages() {
 					</span>
 				</div>
 			)}
-
-			{/* Auto-scroll anchor */}
-			<div ref={bottomRef} />
 		</div>
 	)
 }
