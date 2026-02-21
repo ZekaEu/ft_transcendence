@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate, Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../hooks/useAuth'
 import { useChat } from '../../hooks/useChat'
+import { friendService } from '../../services/friendService'
 import { Avatar } from './Avatar'
 
 export function Navbar() {
@@ -12,6 +13,43 @@ export function Navbar() {
   const navigate = useNavigate()
   const location = useLocation()
   const [isDark, setIsDark] = useState(document.documentElement.classList.contains('dark'))
+  const [pendingFriendsCount, setPendingFriendsCount] = useState(0)
+
+  // Fetch pending friend requests count
+  const fetchPendingCount = useCallback(async () => {
+    try {
+      const data = await friendService.getPendingRequests()
+      setPendingFriendsCount(data.length)
+    } catch (err) {
+      console.error('Failed to fetch pending friends count:', err)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!user) return
+    fetchPendingCount()
+  }, [user, fetchPendingCount])
+
+  // Real-time updates via socket
+  useEffect(() => {
+    const token = localStorage.getItem('authToken')
+    if (!user || !token) return
+
+    friendService.connectSocket(token)
+
+    friendService.onFriendRequest(() => {
+      fetchPendingCount()
+    })
+
+    friendService.onFriendAccepted(() => {
+      fetchPendingCount()
+    })
+
+    return () => {
+      friendService.offFriendRequest()
+      friendService.offFriendAccepted()
+    }
+  }, [user, fetchPendingCount])
 
   const toggleDarkMode = () => {
     const newDark = !isDark
@@ -44,7 +82,7 @@ export function Navbar() {
     { name: t('navbar.chat'), path: '/chat', badge: totalUnread },
     { name: t('navbar.ranking'), path: '/ranking' },
     { name: t('navbar.shop'), path: '/shop' },
-    { name: t('navbar.friends'), path: '/friends' },
+    { name: t('navbar.friends'), path: '/friends', badge: pendingFriendsCount },
   ]
 
   return (

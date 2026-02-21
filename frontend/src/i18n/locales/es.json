@@ -5,7 +5,8 @@
     "ranking": "Ranking",
     "shop": "Tienda",
     "profile": "Perfil",
-    "level": "XP"
+    "level": "XP",
+    "friends": "Amigos"
   },
   "footer": {
     "developedBy": "© 2026 Triple Trouble Trivia. Desarrollado para el proyecto ft_transcendence de 42."
