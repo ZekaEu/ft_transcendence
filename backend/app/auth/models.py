@@ -13,6 +13,7 @@ class User(db.Model):
     avatar_url = db.Column(db.String(512), nullable=True)
     display_name = db.Column(db.String(128), nullable=True)
     bio = db.Column(db.String(500), nullable=True)
+    xp = db.Column(db.Integer, nullable=False, default=0)
     is_active = db.Column(db.Boolean, default=True, nullable=False)
     is_online = db.Column(db.Boolean, default=False, nullable=False)
     last_seen = db.Column(db.DateTime, nullable=True)
@@ -43,6 +44,11 @@ class User(db.Model):
         from werkzeug.security import check_password_hash
         return check_password_hash(self.password_hash, password)
 
+    @property
+    def level(self):
+        """Calculate level from XP. Every 1000 XP = 1 level."""
+        return (self.xp // 1000) + 1
+
     def to_dict(self):
         return {
             'id': self.id,
@@ -51,6 +57,8 @@ class User(db.Model):
             'avatar_url': self.avatar_url,
             'display_name': self.display_name or self.username,
             'bio': self.bio,
+            'xp': self.xp,
+            'level': self.level,
             'is_active': self.is_active,
             'is_online': self.is_online,
             'last_seen': self.last_seen.isoformat() if self.last_seen else None,

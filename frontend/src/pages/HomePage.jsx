@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../hooks/useAuth'
 import apiClient from '../services/apiClient'
 import { friendService } from '../services/friendService'
+import { gameService } from '../services/gameService'
 
 function HomePage() {
   const { t } = useTranslation()
@@ -11,39 +12,63 @@ function HomePage() {
   const [onlineCount, setOnlineCount] = useState(0)
   const [onlineFriends, setOnlineFriends] = useState([])
   const [allFriends, setAllFriends] = useState([])
+  const [achievements, setAchievements] = useState({ unlocked: [], locked: [] })
+  const [loadingAchievements, setLoadingAchievements] = useState(true)
 
-  // Fetch online count
-  useEffect(() => {
-    const fetchOnline = async () => {
-      try {
-        const res = await apiClient.get('/stats/online')
-        setOnlineCount(res.data.online_count)
-      } catch (err) {
-        console.error('Failed to fetch online count:', err)
-      }
+  // Fetch online count - re-runs when user changes (login)
+  const fetchOnlineCount = useCallback(async () => {
+    try {
+      const res = await apiClient.get('/stats/online')
+      setOnlineCount(res.data.online_count)
+    } catch (err) {
+      console.error('Failed to fetch online count:', err)
     }
-    fetchOnline()
-    const interval = setInterval(fetchOnline, 30000)
-    return () => clearInterval(interval)
   }, [])
 
-  // Fetch friends from backend
   useEffect(() => {
-    const fetchFriends = async () => {
-      try {
-        const friends = await friendService.getFriends()
-        setAllFriends(friends)
-        setOnlineFriends(friends.filter((f) => f.is_online))
-      } catch (err) {
-        console.error('Failed to fetch friends:', err)
-      }
+    fetchOnlineCount()
+    const interval = setInterval(fetchOnlineCount, 15000)
+    return () => clearInterval(interval)
+  }, [user, fetchOnlineCount])
+
+  // Fetch friends from backend - re-runs when user changes
+  const fetchFriends = useCallback(async () => {
+    const token = localStorage.getItem('authToken')
+    if (!token) return
+    try {
+      const friends = await friendService.getFriends()
+      setAllFriends(friends)
+      setOnlineFriends(friends.filter((f) => f.is_online))
+    } catch (err) {
+      console.error('Failed to fetch friends:', err)
     }
+  }, [])
+
+  useEffect(() => {
     fetchFriends()
     const interval = setInterval(fetchFriends, 15000)
     return () => clearInterval(interval)
-  }, [])
+  }, [user, fetchFriends])
 
-  // Real-time friend status via socket
+  // Fetch achievements
+  useEffect(() => {
+    const fetchAchievements = async () => {
+      const token = localStorage.getItem('authToken')
+      if (!token) return
+      setLoadingAchievements(true)
+      try {
+        const data = await gameService.getAchievements()
+        setAchievements(data)
+      } catch (err) {
+        console.error('Failed to load achievements:', err)
+      } finally {
+        setLoadingAchievements(false)
+      }
+    }
+    fetchAchievements()
+  }, [user])
+
+  // Real-time friend status via socket - also updates online count
   useEffect(() => {
     const token = localStorage.getItem('authToken')
     if (!token) return
@@ -51,6 +76,7 @@ function HomePage() {
     friendService.connectSocket(token)
 
     friendService.onFriendStatus((data) => {
+      // Update friends list
       setAllFriends((prev) => {
         const updated = prev.map((f) =>
           f.id === data.user_id ? { ...f, is_online: data.is_online } : f
@@ -58,12 +84,14 @@ function HomePage() {
         setOnlineFriends(updated.filter((f) => f.is_online))
         return updated
       })
+      // Refresh online count whenever someone's status changes
+      fetchOnlineCount()
     })
 
     return () => {
       friendService.offFriendStatus()
     }
-  }, [])
+  }, [user, fetchOnlineCount])
 
   return (
     <div className="space-y-16 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -86,7 +114,7 @@ function HomePage() {
             <span className="material-icons-round text-4xl">play_arrow</span>
             {t('home.playNow')}
             <div className="absolute -top-3 -right-3 bg-yellow-400 text-yellow-900 text-xs px-2 py-1 rounded-full animate-bounce font-bold shadow-sm">
-              +50 XP
+              +XP
             </div>
           </Link>
           <div className="mt-6 flex items-center gap-2 text-slate-400 dark:text-slate-500">
@@ -96,64 +124,64 @@ function HomePage() {
         </div>
       </section>
 
-      {/* Game Modes */}
-      <section className="space-y-8">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <span className="material-icons-round text-secondary-500">category</span>
-            {t('home.gameModes')}
-          </h2>
-          <Link to="/modes" className="text-primary-500 font-semibold hover:underline">
-            {t('home.viewAll')}
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <GameModeCard
-            title={t('home.classic')}
-            description={t('home.classicDesc')}
-            icon="emoji_events"
-            color="purple"
-            to="/lobby?mode=classic"
-          />
-          <GameModeCard
-            title={t('home.survival')}
-            description={t('home.survivalDesc')}
-            icon="timer"
-            color="red"
-            to="/lobby?mode=survival"
-          />
-          <GameModeCard
-            title={t('home.timed')}
-            description={t('home.timedDesc')}
-            icon="bolt"
-            color="amber"
-            to="/lobby?mode=duel"
-          />
-        </div>
-      </section>
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Achievements */}
         <div className="lg:col-span-2 glass rounded-2xl p-8 space-y-6">
-          <h3 className="text-xl font-bold flex items-center gap-2">
-            <span className="material-icons-round text-yellow-500">stars</span>
-            {t('home.recentAchievements')}
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <AchievementCard
-              title={t('home.triviaKing')}
-              description={t('home.triviaKingDesc')}
-              icon="local_fire_department"
-              color="blue"
-            />
-            <AchievementCard
-              title={t('home.fastLearner')}
-              description={t('home.fastLearnerDesc')}
-              icon="psychology"
-              color="green"
-            />
+          <div className="flex items-center justify-between">
+            <h3 className="text-xl font-bold flex items-center gap-2">
+              <span className="material-icons-round text-yellow-500">stars</span>
+              {t('profile.achievements')}
+            </h3>
+            {!loadingAchievements && (
+              <span className="text-sm text-slate-400 font-semibold">
+                {achievements.unlocked.length}/{achievements.unlocked.length + achievements.locked.length}
+              </span>
+            )}
           </div>
+
+          {/* Progress bar */}
+          {!loadingAchievements && (
+            <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
+              <div
+                className="bg-gradient-to-r from-yellow-400 to-yellow-600 h-2 rounded-full transition-all duration-500"
+                style={{
+                  width: `${achievements.unlocked.length + achievements.locked.length > 0
+                    ? (achievements.unlocked.length / (achievements.unlocked.length + achievements.locked.length)) * 100
+                    : 0}%`
+                }}
+              />
+            </div>
+          )}
+
+          {loadingAchievements ? (
+            <div className="flex justify-center py-8">
+              <span className="material-icons-round animate-spin text-slate-400">refresh</span>
+              <span className="ml-2 text-sm text-slate-400">{t('profile.loadingAchievements')}</span>
+            </div>
+          ) : (
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+              {achievements.unlocked.map((a) => (
+                <div
+                  key={a.key}
+                  className="flex flex-col items-center p-3 rounded-xl border-2 border-yellow-300 bg-gradient-to-b from-yellow-50 to-white dark:from-yellow-900/20 dark:to-slate-800/50 shadow-sm hover:shadow-md transition-shadow"
+                  title={t(`achv.${a.key}_desc`)}
+                >
+                  <span className="material-symbols-rounded text-2xl text-yellow-500 mb-1">{a.icon}</span>
+                  <p className="text-[10px] font-semibold text-slate-700 dark:text-slate-200 text-center leading-tight">{t(`achv.${a.key}`)}</p>
+                </div>
+              ))}
+              {achievements.locked.map((a) => (
+                <div
+                  key={a.key}
+                  className="relative flex flex-col items-center p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/30 opacity-40 grayscale"
+                  title={t(`achv.${a.key}_desc`)}
+                >
+                  <span className="material-symbols-rounded text-2xl text-slate-400 mb-1">{a.icon}</span>
+                  <p className="text-[10px] font-semibold text-slate-500 text-center leading-tight">{t(`achv.${a.key}`)}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Online Friends */}
@@ -198,56 +226,6 @@ function HomePage() {
   )
 }
 
-function GameModeCard({ title, description, icon, color, to }) {
-  const { t } = useTranslation()
-  const colors = {
-    purple: 'from-purple-400 to-purple-600 ring-secondary-500 bg-secondary-500/10',
-    red: 'from-red-400 to-red-600 ring-red-500 bg-red-500/10',
-    amber: 'from-amber-400 to-amber-600 ring-amber-500 bg-amber-500/10',
-  }
-
-  const textColor = {
-    purple: 'text-secondary-500',
-    red: 'text-red-500',
-    amber: 'text-amber-500',
-  }
-
-  return (
-    <Link to={to} className={`group relative glass rounded-2xl p-8 hover:ring-2 ${colors[color].split(' ')[2]} transition-all cursor-pointer overflow-hidden block`}>
-      <div className={`absolute -right-4 -top-4 w-24 h-24 ${colors[color].split(' ')[3]} rounded-full group-hover:scale-150 transition-transform duration-500`}></div>
-      <div className="relative space-y-4">
-        <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${colors[color].split(' ')[0]} ${colors[color].split(' ')[1]} flex items-center justify-center text-white shadow-lg`}>
-          <span className="material-icons-round text-3xl">{icon}</span>
-        </div>
-        <h3 className="text-2xl font-bold">{title}</h3>
-        <p className="text-slate-500 dark:text-slate-400">{description}</p>
-        <div className={`pt-4 flex items-center gap-2 ${textColor[color]} font-bold`}>
-          {t('lobby.ready')} <span className="material-icons-round group-hover:translate-x-1 transition-transform">arrow_forward</span>
-        </div>
-      </div>
-    </Link>
-  )
-}
-
-function AchievementCard({ title, description, icon, color }) {
-  const bgColors = {
-    blue: 'bg-blue-100 dark:bg-blue-900/30 text-blue-500',
-    green: 'bg-green-100 dark:bg-green-900/30 text-green-500',
-  }
-
-  return (
-    <div className="flex items-center gap-4 bg-white/50 dark:bg-slate-800/50 p-4 rounded-xl border border-white/20">
-      <div className={`p-2 rounded-lg ${bgColors[color]}`}>
-        <span className="material-icons-round">{icon}</span>
-      </div>
-      <div>
-        <p className="font-bold text-sm">{title}</p>
-        <p className="text-xs text-slate-500">{description}</p>
-      </div>
-    </div>
-  )
-}
-
 function FriendItem({ name, status, avatar, online }) {
   return (
     <div className={`flex items-center justify-between ${!online ? 'opacity-60' : ''}`}>
@@ -269,9 +247,6 @@ function FriendItem({ name, status, avatar, online }) {
           </p>
         </div>
       </div>
-      <button className="p-1.5 rounded-lg hover:bg-sky-100 dark:hover:bg-slate-700 text-primary-500">
-        <span className="material-icons-round text-sm">{online ? 'chat' : 'person_add'}</span>
-      </button>
     </div>
   )
 }

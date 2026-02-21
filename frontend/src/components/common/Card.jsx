@@ -15,7 +15,7 @@ export function Card({
 
   return (
     <div
-      className={`bg-white rounded-lg shadow-md ${paddingClass} ${hover ? 'hover:shadow-lg transition-shadow' : ''} ${className}`}
+      className={`${hover ? 'card-hover' : 'card'} ${paddingClass} ${className}`}
       {...props}
     >
       {children}

@@ -3,10 +3,15 @@ from datetime import datetime, timezone
 from flask import request
 from flask_socketio import emit, join_room, leave_room
 from flask_jwt_extended import decode_token
+from flask import current_app
+import eventlet
 
 from app.core.extensions import socketio, db
 from app.auth.models import User
 from app.chat.models import ChatRoom, ChatMessage
+
+# Track chat socket connections: { sid: user_id }
+chat_sid_map = {}
 
 
 # ──────────────────────────────────────────────
@@ -44,6 +49,9 @@ def handle_connect(auth=None):
         # Join personal channel for notifications (new room invites, etc.)
         join_room(f'user_{user_id}')
 
+        # Track this socket connection
+        chat_sid_map[request.sid] = user_id
+
         emit('connected', {'user_id': user.id, 'username': user.username})
     except Exception:
         return False
@@ -51,8 +59,27 @@ def handle_connect(auth=None):
 
 @socketio.on('disconnect', namespace='/chat')
 def handle_disconnect():
-    """Mark user offline on disconnect."""
-    pass  # user status updated via REST logout
+    """Mark user offline after a grace period (handles reconnects on navigation)."""
+    user_id = chat_sid_map.pop(request.sid, None)
+    if not user_id:
+        return
+
+    app = current_app._get_current_object()
+
+    def _delayed_offline_check():
+        with app.app_context():
+            # If user reconnected in the meantime, skip
+            if user_id in chat_sid_map.values():
+                return
+            user = User.query.get(user_id)
+            if user:
+                user.is_online = False
+                user.last_seen = datetime.now(timezone.utc)
+                db.session.commit()
+
+    # Wait 5 seconds — if the user reconnects within that window,
+    # they won't be marked offline (e.g. React effect re-run, navigation)
+    eventlet.spawn_after(5, _delayed_offline_check)
 
 
 # ──────────────────────────────────────────────

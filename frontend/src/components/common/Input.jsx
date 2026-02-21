@@ -16,7 +16,7 @@ export function Input({
   return (
     <div className="w-full">
       {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-2">
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
         </label>

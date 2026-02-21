@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS users (
     avatar_url      VARCHAR(512)    NULL,
     display_name    VARCHAR(128)    NULL,
     bio             VARCHAR(500)    NULL,
+    xp              INT             NOT NULL DEFAULT 0,
     is_active       BOOLEAN         NOT NULL DEFAULT TRUE,
     is_online       BOOLEAN         NOT NULL DEFAULT FALSE,
     last_seen       DATETIME        NULL,
@@ -138,14 +139,17 @@ CREATE TABLE IF NOT EXISTS chat_messages (
 -- Game rooms
 -- ─────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS game_rooms (
-    id          INT AUTO_INCREMENT PRIMARY KEY,
-    name        VARCHAR(128)    NOT NULL,
-    host_id     INT             NOT NULL,
-    game_mode   VARCHAR(32)     NOT NULL DEFAULT 'classic',
-    max_players INT             NOT NULL DEFAULT 4,
-    friends_only BOOLEAN        NOT NULL DEFAULT FALSE,
-    status      VARCHAR(20)     NOT NULL DEFAULT 'waiting',
-    created_at  DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    id                  INT AUTO_INCREMENT PRIMARY KEY,
+    name                VARCHAR(128)    NOT NULL,
+    host_id             INT             NOT NULL,
+    game_mode           VARCHAR(32)     NOT NULL DEFAULT 'classic',
+    max_players         INT             NOT NULL DEFAULT 4,
+    friends_only        BOOLEAN         NOT NULL DEFAULT FALSE,
+    status              VARCHAR(20)     NOT NULL DEFAULT 'waiting',
+    question_category   VARCHAR(32)     NOT NULL DEFAULT 'any',
+    question_difficulty VARCHAR(16)     NOT NULL DEFAULT 'any',
+    question_language   VARCHAR(8)      NOT NULL DEFAULT 'any',
+    created_at          DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_gameroom_host
         FOREIGN KEY (host_id) REFERENCES users(id)
@@ -178,6 +182,30 @@ CREATE TABLE IF NOT EXISTS game_room_players (
     CONSTRAINT uq_room_player
         UNIQUE (room_id, user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- ─────────────────────────────────────────────
+-- User power-ups (shop inventory)
+-- ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS user_powerups (
+    id              INT AUTO_INCREMENT PRIMARY KEY,
+    user_id         INT             NOT NULL,
+    powerup_type    VARCHAR(32)     NOT NULL,
+    quantity        INT             NOT NULL DEFAULT 0,
+
+    CONSTRAINT fk_powerup_user
+        FOREIGN KEY (user_id) REFERENCES users(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT uq_user_powerup
+        UNIQUE (user_id, powerup_type),
+
+    INDEX idx_powerup_user (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- ─────────────────────────────────────────────
+
 
 
 -- ─────────────────────────────────────────────

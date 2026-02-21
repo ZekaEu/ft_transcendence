@@ -13,6 +13,12 @@ export function ChatProvider({ children }) {
 	const [loading, setLoading] = useState(false)
 	const [totalUnread, setTotalUnread] = useState(0)
 	const socketReady = useRef(false)
+	const activeRoomRef = useRef(null)
+
+	// Keep ref in sync with activeRoom so socket callbacks always see current value
+	useEffect(() => {
+		activeRoomRef.current = activeRoom
+	}, [activeRoom])
 
 	const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null
 
@@ -25,21 +31,22 @@ export function ChatProvider({ children }) {
 
 		// Listen for new messages globally
 		chatService.onNewMessage((msg) => {
-			// Add to current message list if we're in that room
-			setMessages((prev) => {
-				if (prev.length > 0 && prev[0]?.room_id === msg.room_id) {
+			const currentRoom = activeRoomRef.current
+
+			// Add to current message list if we're viewing that room
+			if (currentRoom && currentRoom.id === msg.room_id) {
+				setMessages((prev) => {
 					// Avoid duplicates
 					if (prev.find((m) => m.id === msg.id)) return prev
 					return [...prev, msg]
-				}
-				return prev
-			})
+				})
+			}
 
 			// Update room list (bump last_message + unread)
 			setRooms((prev) =>
 				prev.map((r) => {
 					if (r.id === msg.room_id) {
-						const isActive = activeRoom?.id === msg.room_id
+						const isActive = currentRoom?.id === msg.room_id
 						return {
 							...r,
 							last_message: msg,

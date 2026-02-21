@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate, Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../hooks/useAuth'
 import { useChat } from '../../hooks/useChat'
+import { friendService } from '../../services/friendService'
 import { Avatar } from './Avatar'
 
 export function Navbar() {
@@ -12,6 +13,43 @@ export function Navbar() {
   const navigate = useNavigate()
   const location = useLocation()
   const [isDark, setIsDark] = useState(document.documentElement.classList.contains('dark'))
+  const [pendingFriendsCount, setPendingFriendsCount] = useState(0)
+
+  // Fetch pending friend requests count
+  const fetchPendingCount = useCallback(async () => {
+    try {
+      const data = await friendService.getPendingRequests()
+      setPendingFriendsCount(data.length)
+    } catch (err) {
+      console.error('Failed to fetch pending friends count:', err)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!user) return
+    fetchPendingCount()
+  }, [user, fetchPendingCount])
+
+  // Real-time updates via socket
+  useEffect(() => {
+    const token = localStorage.getItem('authToken')
+    if (!user || !token) return
+
+    friendService.connectSocket(token)
+
+    friendService.onFriendRequest(() => {
+      fetchPendingCount()
+    })
+
+    friendService.onFriendAccepted(() => {
+      fetchPendingCount()
+    })
+
+    return () => {
+      friendService.offFriendRequest()
+      friendService.offFriendAccepted()
+    }
+  }, [user, fetchPendingCount])
 
   const toggleDarkMode = () => {
     const newDark = !isDark
@@ -24,7 +62,10 @@ export function Navbar() {
   }
 
   const toggleLanguage = () => {
-    const nextLang = i18n.language === 'en' ? 'pt' : 'en'
+    const languages = ['en', 'pt', 'es', 'fr']
+    const currentIndex = languages.indexOf(i18n.language)
+    const nextIndex = (currentIndex + 1) % languages.length
+    const nextLang = languages[nextIndex]
     i18n.changeLanguage(nextLang)
     localStorage.setItem('language', nextLang)
   }
@@ -41,7 +82,7 @@ export function Navbar() {
     { name: t('navbar.chat'), path: '/chat', badge: totalUnread },
     { name: t('navbar.ranking'), path: '/ranking' },
     { name: t('navbar.shop'), path: '/shop' },
-    { name: t('navbar.friends'), path: '/friends' },
+    { name: t('navbar.friends'), path: '/friends', badge: pendingFriendsCount },
   ]
 
   return (
@@ -84,7 +125,7 @@ export function Navbar() {
             onClick={toggleLanguage}
             className="px-2 py-1 rounded-lg text-xs font-black bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-primary-500 transition-all uppercase"
           >
-            {i18n.language === 'en' ? 'PT' : 'EN'}
+            {i18n.language.toUpperCase()}
           </button>
 
           <button
@@ -100,7 +141,7 @@ export function Navbar() {
               <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
                 {user.username}
               </p>
-              <p className="text-sm font-bold text-primary-500">{t('navbar.level')} {user.level || 1}</p>
+              <p className="text-sm font-bold text-primary-500">{user.xp ?? 0} XP</p>
             </div>
 
             <Link to="/profile" className="relative">

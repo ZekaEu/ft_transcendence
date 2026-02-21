@@ -4,8 +4,27 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.game import game_bp
 from app.core.extensions import db, socketio
 from app.auth.models import User
-from app.game.models import GameRoom, GameRoomPlayer
+from app.game.models import (
+    GameRoom, GameRoomPlayer, UserPowerup, POWERUP_CATALOGUE,
+    KAHOOT_CATEGORIES, KAHOOT_LANGUAGES, VALID_DIFFICULTIES, ACHIEVEMENTS_CATALOGUE,
+)
 from app.friends.models import Friendship
+
+
+# ──────────────────────────────────────────────
+# Available Kahoot trivia categories, difficulties & languages
+# ──────────────────────────────────────────────
+@game_bp.route('/trivia/categories', methods=['GET'])
+@jwt_required()
+def trivia_categories():
+    categories = [
+        {'key': k, 'label': k.replace('_', ' ').title()} for k in KAHOOT_CATEGORIES.keys()
+    ]
+    difficulties = list(VALID_DIFFICULTIES)
+    languages = [
+        {'key': k, 'label': v or 'Any'} for k, v in KAHOOT_LANGUAGES.items()
+    ]
+    return jsonify({'categories': categories, 'difficulties': difficulties, 'languages': languages}), 200
 
 
 # ──────────────────────────────────────────────
@@ -36,10 +55,7 @@ def current_room():
 @jwt_required()
 def list_rooms():
     user_id = int(get_jwt_identity())
-    mode = request.args.get('mode')
     query = GameRoom.query.filter_by(status='waiting')
-    if mode:
-        query = query.filter_by(game_mode=mode)
     rooms = query.order_by(GameRoom.created_at.desc()).all()
 
     # Filter out friends_only rooms where user is not friends with host
@@ -73,15 +89,23 @@ def create_room():
     data = request.get_json() or {}
 
     name = (data.get('name') or '').strip()
-    game_mode = data.get('game_mode', 'classic')
     max_players = data.get('max_players', 4)
+    question_category = data.get('question_category', 'any')
+    question_difficulty = data.get('question_difficulty', 'any')
+    question_language = data.get('question_language', 'any')
     friends_only = bool(data.get('friends_only', False))
 
     if not name:
         return jsonify({'message': 'Room name is required'}), 400
 
-    if game_mode not in ('classic', 'survival', 'timed'):
-        return jsonify({'message': 'Invalid game mode'}), 400
+    if question_category not in KAHOOT_CATEGORIES:
+        return jsonify({'message': 'Invalid question category'}), 400
+
+    if question_difficulty not in VALID_DIFFICULTIES:
+        return jsonify({'message': 'Invalid question difficulty'}), 400
+
+    if question_language not in KAHOOT_LANGUAGES:
+        return jsonify({'message': 'Invalid question language'}), 400
 
     max_players = min(max(int(max_players), 2), 8)
 
@@ -98,8 +122,11 @@ def create_room():
     room = GameRoom(
         name=name,
         host_id=user_id,
-        game_mode=game_mode,
+        game_mode='classic',
         max_players=max_players,
+        question_category=question_category,
+        question_difficulty=question_difficulty,
+        question_language=question_language,
         friends_only=friends_only,
     )
     db.session.add(room)
@@ -266,3 +293,310 @@ def start_game(room_id):
     db.session.commit()
 
     return jsonify(room.to_dict()), 200
+
+
+# ──────────────────────────────────────────────
+# Global ranking (sorted by XP)
+# ──────────────────────────────────────────────
+@game_bp.route('/ranking', methods=['GET'])
+@jwt_required()
+def global_ranking():
+    """Return all users sorted by XP descending."""
+    limit = request.args.get('limit', 50, type=int)
+    limit = min(max(limit, 1), 200)
+
+    users = (
+        User.query
+        .filter(User.xp > 0)
+        .order_by(User.xp.desc())
+        .limit(limit)
+        .all()
+    )
+
+    ranking = []
+    for idx, u in enumerate(users):
+        # Count finished games for this user
+        games_played = (
+            GameRoomPlayer.query
+            .join(GameRoom)
+            .filter(
+                GameRoomPlayer.user_id == u.id,
+                GameRoom.status == 'finished',
+            )
+            .count()
+        )
+        ranking.append({
+            'rank': idx + 1,
+            'user_id': u.id,
+            'username': u.username,
+            'display_name': u.display_name or u.username,
+            'avatar_url': u.avatar_url,
+            'xp': u.xp,
+            'level': u.level,
+            'games_played': games_played,
+        })
+
+    return jsonify(ranking), 200
+
+
+# ──────────────────────────────────────────────
+# Match history for the logged-in user
+# ──────────────────────────────────────────────
+@game_bp.route('/history', methods=['GET'])
+@jwt_required()
+def match_history():
+    user_id = int(get_jwt_identity())
+    filter_type = request.args.get('filter', 'all')  # all | wins | losses
+
+    # All finished rooms where this user participated
+    participations = (
+        GameRoomPlayer.query
+        .join(GameRoom)
+        .filter(
+            GameRoomPlayer.user_id == user_id,
+            GameRoom.status == 'finished',
+        )
+        .order_by(GameRoom.created_at.desc())
+        .all()
+    )
+
+    # Build stats from ALL participations (before filtering)
+    total_games = len(participations)
+    wins = 0
+    losses = 0
+    matches = []
+
+    for p in participations:
+        room = p.room
+        # Players sorted by score descending
+        players_sorted = (
+            GameRoomPlayer.query
+            .filter_by(room_id=room.id)
+            .order_by(GameRoomPlayer.score.desc())
+            .all()
+        )
+
+        winner_id = players_sorted[0].user_id if players_sorted else None
+        is_winner = (winner_id == user_id)
+
+        if is_winner:
+            wins += 1
+        else:
+            losses += 1
+
+        # Apply filter
+        if filter_type == 'wins' and not is_winner:
+            continue
+        if filter_type == 'losses' and is_winner:
+            continue
+
+        # User rank in this match
+        user_rank = next(
+            (i + 1 for i, pl in enumerate(players_sorted) if pl.user_id == user_id),
+            None,
+        )
+
+        matches.append({
+            'room_id': room.id,
+            'room_name': room.name,
+            'game_mode': room.game_mode,
+            'score': p.score,
+            'rank': user_rank,
+            'total_players': len(players_sorted),
+            'is_winner': is_winner,
+            'winner': {
+                'user_id': players_sorted[0].user_id,
+                'username': players_sorted[0].user.username,
+            } if players_sorted and players_sorted[0].user else None,
+            'players': [
+                {
+                    'user_id': pl.user_id,
+                    'username': pl.user.username if pl.user else None,
+                    'avatar_url': pl.user.avatar_url if pl.user else None,
+                    'score': pl.score,
+                }
+                for pl in players_sorted
+            ],
+            'played_at': room.created_at.isoformat() if room.created_at else None,
+        })
+
+    return jsonify({
+        'matches': matches,
+        'stats': {
+            'total': total_games,
+            'wins': wins,
+            'losses': losses,
+            'win_rate': round((wins / total_games) * 100, 1) if total_games > 0 else 0,
+        },
+    }), 200
+
+
+# ──────────────────────────────────────────────
+# Shop – catalogue
+# ──────────────────────────────────────────────
+@game_bp.route('/shop/catalogue', methods=['GET'])
+@jwt_required()
+def shop_catalogue():
+    """Return the power-up catalogue with prices."""
+    items = []
+    for ptype, info in POWERUP_CATALOGUE.items():
+        items.append({
+            'type': ptype,
+            'name': info['name'],
+            'cost': info['cost'],
+            'icon': info['icon'],
+        })
+    return jsonify({'items': items}), 200
+
+
+# ──────────────────────────────────────────────
+# Shop – buy power-up
+# ──────────────────────────────────────────────
+@game_bp.route('/shop/buy', methods=['POST'])
+@jwt_required()
+def shop_buy():
+    """Purchase a power-up using XP."""
+    user_id = int(get_jwt_identity())
+    data = request.get_json() or {}
+    powerup_type = data.get('powerup_type')
+    quantity = data.get('quantity', 1)
+
+    if not powerup_type or powerup_type not in POWERUP_CATALOGUE:
+        return jsonify({'error': 'Invalid powerup type'}), 400
+
+    if not isinstance(quantity, int) or quantity < 1:
+        return jsonify({'error': 'Quantity must be a positive integer'}), 400
+
+    cost_each = POWERUP_CATALOGUE[powerup_type]['cost']
+    total_cost = cost_each * quantity
+
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
+    if (user.xp or 0) < total_cost:
+        return jsonify({'error': 'Not enough XP', 'required': total_cost, 'current': user.xp or 0}), 400
+
+    # Deduct XP
+    user.xp = (user.xp or 0) - total_cost
+
+    # Add or update powerup inventory
+    record = UserPowerup.query.filter_by(user_id=user_id, powerup_type=powerup_type).first()
+    if record:
+        record.quantity += quantity
+    else:
+        record = UserPowerup(user_id=user_id, powerup_type=powerup_type, quantity=quantity)
+        db.session.add(record)
+
+    db.session.commit()
+
+    return jsonify({
+        'message': f'Purchased {quantity}x {powerup_type}',
+        'powerup': record.to_dict(),
+        'xp_remaining': user.xp,
+    }), 200
+
+
+# ──────────────────────────────────────────────
+# Shop – inventory (user's power-ups)
+# ──────────────────────────────────────────────
+@game_bp.route('/shop/inventory', methods=['GET'])
+@jwt_required()
+def shop_inventory():
+    """Return the current user's power-up inventory."""
+    user_id = int(get_jwt_identity())
+    records = UserPowerup.query.filter_by(user_id=user_id).all()
+    user = User.query.get(user_id)
+    return jsonify({
+        'inventory': [r.to_dict() for r in records],
+        'xp': user.xp if user else 0,
+    }), 200
+
+
+# ──────────────────────────────────────────────
+# Achievements
+# ──────────────────────────────────────────────
+@game_bp.route('/achievements', methods=['GET'])
+@jwt_required()
+def get_achievements():
+    """Dynamically compute achievements based on user stats."""
+    user_id = int(get_jwt_identity())
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
+    xp = user.xp or 0
+
+    games_played = GameRoomPlayer.query.join(GameRoom).filter(
+        GameRoomPlayer.user_id == user_id,
+        GameRoom.status == 'finished',
+    ).count()
+
+    # Wins = ranked #1 in finished rooms
+    wins = 0
+    finished = (
+        GameRoomPlayer.query.join(GameRoom)
+        .filter(GameRoomPlayer.user_id == user_id, GameRoom.status == 'finished')
+        .all()
+    )
+    for p in finished:
+        top = (
+            GameRoomPlayer.query.filter_by(room_id=p.room_id)
+            .order_by(GameRoomPlayer.score.desc())
+            .first()
+        )
+        if top and top.user_id == user_id:
+            wins += 1
+
+    friend_count = Friendship.query.filter(
+        db.or_(Friendship.user_id == user_id, Friendship.friend_id == user_id),
+        Friendship.status == 'accepted',
+    ).count()
+
+    rooms_created = GameRoom.query.filter_by(host_id=user_id).count()
+
+    played_3_plus = GameRoomPlayer.query.join(GameRoom).filter(
+        GameRoomPlayer.user_id == user_id, GameRoom.status == 'finished',
+        GameRoom.id.in_(
+            db.session.query(GameRoomPlayer.room_id)
+            .group_by(GameRoomPlayer.room_id)
+            .having(db.func.count(GameRoomPlayer.id) >= 3)
+        )
+    ).first() is not None
+
+    played_5_plus = GameRoomPlayer.query.join(GameRoom).filter(
+        GameRoomPlayer.user_id == user_id, GameRoom.status == 'finished',
+        GameRoom.id.in_(
+            db.session.query(GameRoomPlayer.room_id)
+            .group_by(GameRoomPlayer.room_id)
+            .having(db.func.count(GameRoomPlayer.id) >= 5)
+        )
+    ).first() is not None
+
+    # Map category → current value
+    stat_map = {
+        'xp': xp,
+        'games': games_played,
+        'wins': wins,
+        'social': friend_count,
+        'rooms': rooms_created,
+    }
+
+    unlocked = []
+    locked = []
+    for key, meta in ACHIEVEMENTS_CATALOGUE.items():
+        entry = {'key': key, 'icon': meta['icon'], 'category': meta['category']}
+        # Multiplayer achievements use boolean flags
+        if key == 'play_3_plus':
+            is_unlocked = played_3_plus
+        elif key == 'play_5_plus':
+            is_unlocked = played_5_plus
+        else:
+            is_unlocked = stat_map.get(meta['category'], 0) >= meta['threshold']
+
+        if is_unlocked:
+            unlocked.append(entry)
+        else:
+            locked.append(entry)
+
+    return jsonify({'unlocked': unlocked, 'locked': locked}), 200
