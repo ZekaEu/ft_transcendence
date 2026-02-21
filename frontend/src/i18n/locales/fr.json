@@ -149,6 +149,7 @@
     "finalScore": "Score Final",
     "gameOver": "FIN DE PARTIE",
     "loading": "Chargement du jeu...",
+    "loadingImage": "Chargement de l'image...",
     "nextQuestion": "Prochaine question bientôt...",
     "playAgain": "Retour au Lobby",
     "questionOf": "Question {{current}} sur {{total}}",

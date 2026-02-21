@@ -61,6 +61,13 @@ export function Navbar() {
     }
   }
 
+  const LANG_FLAGS = {
+    en: '🇬🇧',
+    pt: '🇧🇷',
+    es: '🇪🇸',
+    fr: '🇫🇷',
+  }
+
   const toggleLanguage = () => {
     const languages = ['en', 'pt', 'es', 'fr']
     const currentIndex = languages.indexOf(i18n.language)
@@ -124,9 +131,11 @@ export function Navbar() {
         <div className="flex items-center gap-4">
           <button
             onClick={toggleLanguage}
-            className="px-2 py-1 rounded-lg text-xs font-black bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-primary-500 transition-all uppercase"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-black bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-primary-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all uppercase"
+            title={t('navbar.language') || 'Language'}
           >
-            {i18n.language.toUpperCase()}
+            <span className="text-base leading-none">{LANG_FLAGS[i18n.language] || LANG_FLAGS.en}</span>
+            <span>{i18n.language.toUpperCase()}</span>
           </button>
 
           <button
