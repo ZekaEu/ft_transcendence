@@ -496,6 +496,43 @@ def get_questions(count=10, category=None, difficulty=None, language=None):
     return selected
 
 
+class MatchHistory(db.Model):
+    """Unified match history – one row per player per finished game (trivia or memory)."""
+    __tablename__ = 'match_history'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    game_type = db.Column(db.String(16), nullable=False)          # 'trivia' | 'memory'
+    room_id = db.Column(db.Integer, nullable=False)               # FK conceptual — room may be deleted
+    room_name = db.Column(db.String(128), nullable=False)
+    score = db.Column(db.Integer, nullable=False, default=0)
+    is_winner = db.Column(db.Boolean, nullable=False, default=False)
+    total_players = db.Column(db.Integer, nullable=False, default=2)
+    rank = db.Column(db.Integer, nullable=False, default=1)
+    played_at = db.Column(
+        db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc)
+    )
+
+    user = db.relationship('User', backref=db.backref('match_history', lazy='dynamic'))
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'game_type': self.game_type,
+            'room_id': self.room_id,
+            'room_name': self.room_name,
+            'score': self.score,
+            'is_winner': self.is_winner,
+            'total_players': self.total_players,
+            'rank': self.rank,
+            'played_at': self.played_at.isoformat() if self.played_at else None,
+        }
+
+    def __repr__(self):
+        return f'<MatchHistory user={self.user_id} type={self.game_type} room={self.room_id}>'
+
+
 class UserPowerup(db.Model):
     """Tracks power-ups owned by a user (purchased from the shop)."""
     __tablename__ = 'user_powerups'
