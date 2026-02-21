@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../hooks/useAuth'
@@ -12,38 +12,42 @@ function HomePage() {
   const [onlineFriends, setOnlineFriends] = useState([])
   const [allFriends, setAllFriends] = useState([])
 
-  // Fetch online count
-  useEffect(() => {
-    const fetchOnline = async () => {
-      try {
-        const res = await apiClient.get('/stats/online')
-        setOnlineCount(res.data.online_count)
-      } catch (err) {
-        console.error('Failed to fetch online count:', err)
-      }
+  // Fetch online count - re-runs when user changes (login)
+  const fetchOnlineCount = useCallback(async () => {
+    try {
+      const res = await apiClient.get('/stats/online')
+      setOnlineCount(res.data.online_count)
+    } catch (err) {
+      console.error('Failed to fetch online count:', err)
     }
-    fetchOnline()
-    const interval = setInterval(fetchOnline, 30000)
-    return () => clearInterval(interval)
   }, [])
 
-  // Fetch friends from backend
   useEffect(() => {
-    const fetchFriends = async () => {
-      try {
-        const friends = await friendService.getFriends()
-        setAllFriends(friends)
-        setOnlineFriends(friends.filter((f) => f.is_online))
-      } catch (err) {
-        console.error('Failed to fetch friends:', err)
-      }
+    fetchOnlineCount()
+    const interval = setInterval(fetchOnlineCount, 15000)
+    return () => clearInterval(interval)
+  }, [user, fetchOnlineCount])
+
+  // Fetch friends from backend - re-runs when user changes
+  const fetchFriends = useCallback(async () => {
+    const token = localStorage.getItem('authToken')
+    if (!token) return
+    try {
+      const friends = await friendService.getFriends()
+      setAllFriends(friends)
+      setOnlineFriends(friends.filter((f) => f.is_online))
+    } catch (err) {
+      console.error('Failed to fetch friends:', err)
     }
+  }, [])
+
+  useEffect(() => {
     fetchFriends()
     const interval = setInterval(fetchFriends, 15000)
     return () => clearInterval(interval)
-  }, [])
+  }, [user, fetchFriends])
 
-  // Real-time friend status via socket
+  // Real-time friend status via socket - also updates online count
   useEffect(() => {
     const token = localStorage.getItem('authToken')
     if (!token) return
@@ -51,6 +55,7 @@ function HomePage() {
     friendService.connectSocket(token)
 
     friendService.onFriendStatus((data) => {
+      // Update friends list
       setAllFriends((prev) => {
         const updated = prev.map((f) =>
           f.id === data.user_id ? { ...f, is_online: data.is_online } : f
@@ -58,12 +63,14 @@ function HomePage() {
         setOnlineFriends(updated.filter((f) => f.is_online))
         return updated
       })
+      // Refresh online count whenever someone's status changes
+      fetchOnlineCount()
     })
 
     return () => {
       friendService.offFriendStatus()
     }
-  }, [])
+  }, [user, fetchOnlineCount])
 
   return (
     <div className="space-y-16 animate-in fade-in slide-in-from-bottom-4 duration-700">
