@@ -100,9 +100,27 @@ function ProfilePage() {
     }
   }
 
-  const handleRemoveAvatar = () => {
-    setAvatarFile(null)
-    setAvatarPreview('')
+  const handleRemoveAvatar = async () => {
+    if (!user) return
+
+    try {
+      setUploadingAvatar(true)
+      const response = await userService.removeAvatar(user.id)
+      
+      // Update local state with server response
+      if (response.user && response.user.avatar_url === null) {
+        setAvatarFile(null)
+        setAvatarPreview('')
+        toast.success(t('profile.avatarRemoved') || 'Avatar removed successfully')
+        // Refresh user data to sync auth context
+        await refreshUserData()
+      }
+    } catch (err) {
+      console.error('Avatar removal error:', err)
+      toast.error(err.message || t('profile.updateFailed'))
+    } finally {
+      setUploadingAvatar(false)
+    }
   }
 
   const handleAvatarUpload = async (fileToUpload) => {
