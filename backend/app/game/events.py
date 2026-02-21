@@ -5,7 +5,7 @@ import eventlet
 
 from app.core.extensions import socketio, db
 from app.auth.models import User
-from app.game.models import GameRoom, GameRoomPlayer, get_questions, UserPowerup, POWERUP_CATALOGUE
+from app.game.models import GameRoom, GameRoomPlayer, MatchHistory, get_questions, UserPowerup, POWERUP_CATALOGUE
 
 # In-memory game sessions: { room_id: { questions, current, scores, answered, time_per_question } }
 game_sessions = {}
@@ -455,7 +455,8 @@ def _end_game(room_id):
     room = GameRoom.query.get(room_id)
     if room:
         room.status = 'finished'
-        for entry in scoreboard:
+        total_players = len(scoreboard)
+        for rank_idx, entry in enumerate(scoreboard):
             player = room.players.filter_by(user_id=entry['user_id']).first()
             if player:
                 player.score = entry['score']
@@ -463,6 +464,18 @@ def _end_game(room_id):
             user = User.query.get(entry['user_id'])
             if user:
                 user.xp = (user.xp or 0) + entry['score']
+            # Record unified match history
+            mh = MatchHistory(
+                user_id=entry['user_id'],
+                game_type='trivia',
+                room_id=room.id,
+                room_name=room.name,
+                score=entry['score'],
+                is_winner=(rank_idx == 0),
+                total_players=total_players,
+                rank=rank_idx + 1,
+            )
+            db.session.add(mh)
         db.session.commit()
 
     # Send final results

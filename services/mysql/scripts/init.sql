@@ -205,7 +205,79 @@ CREATE TABLE IF NOT EXISTS user_powerups (
 
 
 -- ─────────────────────────────────────────────
+-- Memory game rooms
+-- ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS memory_game_rooms (
+    id              INT AUTO_INCREMENT PRIMARY KEY,
+    name            VARCHAR(128)    NOT NULL,
+    host_id         INT             NOT NULL,
+    board_size      VARCHAR(16)     NOT NULL DEFAULT 'medium',
+    theme           VARCHAR(32)     NOT NULL DEFAULT 'animals',
+    max_players     INT             NOT NULL DEFAULT 4,
+    friends_only    BOOLEAN         NOT NULL DEFAULT FALSE,
+    status          VARCHAR(20)     NOT NULL DEFAULT 'waiting',
+    created_at      DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
+    CONSTRAINT fk_memoryroom_host
+        FOREIGN KEY (host_id) REFERENCES users(id)
+        ON DELETE CASCADE,
+
+    INDEX idx_memoryroom_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- ─────────────────────────────────────────────
+-- Memory game players
+-- ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS memory_game_players (
+    id          INT AUTO_INCREMENT PRIMARY KEY,
+    room_id     INT             NOT NULL,
+    user_id     INT             NOT NULL,
+    is_ready    BOOLEAN         NOT NULL DEFAULT FALSE,
+    score       INT             NOT NULL DEFAULT 0,
+    pairs_found INT             NOT NULL DEFAULT 0,
+    joined_at   DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_mgrp_room
+        FOREIGN KEY (room_id) REFERENCES memory_game_rooms(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_mgrp_user
+        FOREIGN KEY (user_id) REFERENCES users(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT uq_memory_room_player
+        UNIQUE (room_id, user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- ─────────────────────────────────────────────
+
+
+
+-- ─────────────────────────────────────────────
+-- Unified match history (trivia + memory)
+-- ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS match_history (
+    id              INT AUTO_INCREMENT PRIMARY KEY,
+    user_id         INT             NOT NULL,
+    game_type       VARCHAR(16)     NOT NULL,
+    room_id         INT             NOT NULL,
+    room_name       VARCHAR(128)    NOT NULL,
+    score           INT             NOT NULL DEFAULT 0,
+    is_winner       BOOLEAN         NOT NULL DEFAULT FALSE,
+    total_players   INT             NOT NULL DEFAULT 2,
+    `rank`          INT             NOT NULL DEFAULT 1,
+    played_at       DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_mh_user
+        FOREIGN KEY (user_id) REFERENCES users(id)
+        ON DELETE CASCADE,
+
+    INDEX idx_mh_user (user_id),
+    INDEX idx_mh_game_type (game_type),
+    INDEX idx_mh_played_at (played_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 -- ─────────────────────────────────────────────

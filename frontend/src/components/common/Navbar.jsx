@@ -81,6 +81,7 @@ export function Navbar() {
     { name: t('navbar.home'), path: '/' },
     { name: t('navbar.chat'), path: '/chat', badge: totalUnread },
     { name: t('navbar.ranking'), path: '/ranking' },
+    { name: t('navbar.play'), path: '/lobby' },
     { name: t('navbar.shop'), path: '/shop' },
     { name: t('navbar.friends'), path: '/friends', badge: pendingFriendsCount },
   ]
