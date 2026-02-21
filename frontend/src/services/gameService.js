@@ -9,6 +9,12 @@ let gameSocket = null
 // REST API calls
 // ──────────────────────────────────────────────
 export const gameService = {
+  // ── Match History ────────────────────────
+  getMatchHistory: async (filter = 'all') => {
+    const response = await apiClient.get('/game/history', { params: { filter } })
+    return response.data
+  },
+
   // ── Rooms ────────────────────────────────
   getCurrentRoom: async () => {
     const response = await apiClient.get('/game/rooms/current')

@@ -261,3 +261,95 @@ def start_game(room_id):
     db.session.commit()
 
     return jsonify(room.to_dict()), 200
+
+
+# ──────────────────────────────────────────────
+# Match history for the logged-in user
+# ──────────────────────────────────────────────
+@game_bp.route('/history', methods=['GET'])
+@jwt_required()
+def match_history():
+    user_id = int(get_jwt_identity())
+    filter_type = request.args.get('filter', 'all')  # all | wins | losses
+
+    # All finished rooms where this user participated
+    participations = (
+        GameRoomPlayer.query
+        .join(GameRoom)
+        .filter(
+            GameRoomPlayer.user_id == user_id,
+            GameRoom.status == 'finished',
+        )
+        .order_by(GameRoom.created_at.desc())
+        .all()
+    )
+
+    # Build stats from ALL participations (before filtering)
+    total_games = len(participations)
+    wins = 0
+    losses = 0
+    matches = []
+
+    for p in participations:
+        room = p.room
+        # Players sorted by score descending
+        players_sorted = (
+            GameRoomPlayer.query
+            .filter_by(room_id=room.id)
+            .order_by(GameRoomPlayer.score.desc())
+            .all()
+        )
+
+        winner_id = players_sorted[0].user_id if players_sorted else None
+        is_winner = (winner_id == user_id)
+
+        if is_winner:
+            wins += 1
+        else:
+            losses += 1
+
+        # Apply filter
+        if filter_type == 'wins' and not is_winner:
+            continue
+        if filter_type == 'losses' and is_winner:
+            continue
+
+        # User rank in this match
+        user_rank = next(
+            (i + 1 for i, pl in enumerate(players_sorted) if pl.user_id == user_id),
+            None,
+        )
+
+        matches.append({
+            'room_id': room.id,
+            'room_name': room.name,
+            'game_mode': room.game_mode,
+            'score': p.score,
+            'rank': user_rank,
+            'total_players': len(players_sorted),
+            'is_winner': is_winner,
+            'winner': {
+                'user_id': players_sorted[0].user_id,
+                'username': players_sorted[0].user.username,
+            } if players_sorted and players_sorted[0].user else None,
+            'players': [
+                {
+                    'user_id': pl.user_id,
+                    'username': pl.user.username if pl.user else None,
+                    'avatar_url': pl.user.avatar_url if pl.user else None,
+                    'score': pl.score,
+                }
+                for pl in players_sorted
+            ],
+            'played_at': room.created_at.isoformat() if room.created_at else None,
+        })
+
+    return jsonify({
+        'matches': matches,
+        'stats': {
+            'total': total_games,
+            'wins': wins,
+            'losses': losses,
+            'win_rate': round((wins / total_games) * 100, 1) if total_games > 0 else 0,
+        },
+    }), 200
