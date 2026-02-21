@@ -269,9 +269,6 @@ function FriendItem({ name, status, avatar, online }) {
           </p>
         </div>
       </div>
-      <button className="p-1.5 rounded-lg hover:bg-sky-100 dark:hover:bg-slate-700 text-primary-500">
-        <span className="material-icons-round text-sm">{online ? 'chat' : 'person_add'}</span>
-      </button>
     </div>
   )
 }
