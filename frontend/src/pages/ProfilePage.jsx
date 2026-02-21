@@ -200,11 +200,11 @@ function ProfilePage() {
   return (
     <div className="max-w-2xl mx-auto animate-fade-in">
       <Card>
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">{t('profile.myProfile')}</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">{t('profile.myProfile')}</h1>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Avatar Section */}
-          <div className="flex items-center gap-6 pb-6 border-b border-gray-200">
+          <div className="flex items-center gap-6 pb-6 border-b border-gray-200 dark:border-slate-700">
             <div className="relative">
               {avatarPreview ? (
                 <Avatar
@@ -286,7 +286,7 @@ function ProfilePage() {
 
           {/* Bio */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">
               {t('profile.bio')}
             </label>
             <textarea
@@ -296,7 +296,7 @@ function ProfilePage() {
               placeholder={t('profile.bioPlaceholder')}
               maxLength="500"
               rows="4"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:cursor-not-allowed resize-none"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:cursor-not-allowed resize-none bg-white dark:bg-slate-800 dark:text-white"
             />
             <p className="mt-1 text-xs text-gray-500">{bio.length}/500</p>
           </div>
@@ -315,25 +315,25 @@ function ProfilePage() {
 
       {/* ── Match History Section ── */}
       <Card className="mt-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">{t('profile.matchHistory')}</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('profile.matchHistory')}</h2>
 
         {/* Stats Overview */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-          <div className="bg-gray-50 rounded-xl p-4 text-center">
-            <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
-            <p className="text-sm text-gray-500">{t('profile.totalGames')}</p>
+          <div className="bg-gray-50 dark:bg-slate-800 rounded-xl p-4 text-center">
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
+            <p className="text-sm text-gray-500 dark:text-slate-400">{t('profile.totalGames')}</p>
           </div>
-          <div className="bg-green-50 rounded-xl p-4 text-center">
-            <p className="text-2xl font-bold text-green-600">{stats.wins}</p>
-            <p className="text-sm text-gray-500">{t('profile.wins')}</p>
+          <div className="bg-green-50 dark:bg-green-900/20 rounded-xl p-4 text-center">
+            <p className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.wins}</p>
+            <p className="text-sm text-gray-500 dark:text-slate-400">{t('profile.wins')}</p>
           </div>
-          <div className="bg-red-50 rounded-xl p-4 text-center">
-            <p className="text-2xl font-bold text-red-600">{stats.losses}</p>
-            <p className="text-sm text-gray-500">{t('profile.losses')}</p>
+          <div className="bg-red-50 dark:bg-red-900/20 rounded-xl p-4 text-center">
+            <p className="text-2xl font-bold text-red-600 dark:text-red-400">{stats.losses}</p>
+            <p className="text-sm text-gray-500 dark:text-slate-400">{t('profile.losses')}</p>
           </div>
-          <div className="bg-blue-50 rounded-xl p-4 text-center">
-            <p className="text-2xl font-bold text-blue-600">{stats.win_rate}%</p>
-            <p className="text-sm text-gray-500">{t('profile.winRate')}</p>
+          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 text-center">
+            <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.win_rate}%</p>
+            <p className="text-sm text-gray-500 dark:text-slate-400">{t('profile.winRate')}</p>
           </div>
         </div>
 
@@ -346,7 +346,7 @@ function ProfilePage() {
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 gameTypeFilter === gType
                   ? 'bg-indigo-600 text-white shadow-sm'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-600'
               }`}
             >
               {gType === 'all' && t('profile.allGames')}
@@ -357,7 +357,7 @@ function ProfilePage() {
         </div>
 
         {/* Win/Loss Filter Tabs */}
-        <div className="flex gap-2 mb-6 border-b border-gray-200 pb-4">
+        <div className="flex gap-2 mb-6 border-b border-gray-200 dark:border-slate-700 pb-4">
           {['all', 'wins', 'losses'].map((filter) => (
             <button
               key={filter}
@@ -365,7 +365,7 @@ function ProfilePage() {
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 historyFilter === filter
                   ? 'bg-blue-600 text-white shadow-sm'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-600'
               }`}
             >
               {filter === 'all' && t('profile.allMatches')}
@@ -394,8 +394,8 @@ function ProfilePage() {
                 key={`${match.game_type}_${match.room_id}_${idx}`}
                 className={`flex items-center justify-between p-4 rounded-xl border transition-colors ${
                   match.is_winner
-                    ? 'border-green-200 bg-green-50/50'
-                    : 'border-red-200 bg-red-50/50'
+                    ? 'border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-900/20'
+                    : 'border-red-200 dark:border-red-800 bg-red-50/50 dark:bg-red-900/20'
                 }`}
               >
                 <div className="flex items-center gap-4">
@@ -409,7 +409,7 @@ function ProfilePage() {
                   </div>
 
                   <div>
-                    <p className="font-semibold text-gray-900">{match.room_name}</p>
+                    <p className="font-semibold text-gray-900 dark:text-white">{match.room_name}</p>
                     <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
                       <span className={`inline-flex items-center px-2 py-0.5 rounded-full font-medium ${
                         match.is_winner
@@ -431,7 +431,7 @@ function ProfilePage() {
                 </div>
 
                 <div className="text-right flex-shrink-0">
-                  <p className="text-lg font-bold text-gray-900">{match.score}</p>
+                  <p className="text-lg font-bold text-gray-900 dark:text-white">{match.score}</p>
                   <p className="text-xs text-gray-500">
                     {t('profile.rank')}: {match.rank}/{match.total_players}
                   </p>
@@ -450,7 +450,7 @@ function ProfilePage() {
       {/* ── Achievements Section ── */}
       <Card className="mt-8">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">{t('profile.achievements')}</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('profile.achievements')}</h2>
           {!loadingAchievements && (
             <span className="text-sm text-gray-500">
               {achievements.unlocked.length}/{achievements.unlocked.length + achievements.locked.length}
@@ -461,7 +461,7 @@ function ProfilePage() {
         {/* Progress bar */}
         {!loadingAchievements && (
           <div className="mb-6">
-            <div className="w-full bg-gray-200 rounded-full h-2.5">
+            <div className="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2.5">
               <div
                 className="bg-gradient-to-r from-yellow-400 to-yellow-600 h-2.5 rounded-full transition-all duration-500"
                 style={{
@@ -485,12 +485,12 @@ function ProfilePage() {
             {achievements.unlocked.map((a) => (
               <div
                 key={a.key}
-                className="relative flex flex-col items-center p-4 rounded-xl border-2 border-yellow-300 bg-gradient-to-b from-yellow-50 to-white shadow-sm hover:shadow-md transition-shadow"
+                className="relative flex flex-col items-center p-4 rounded-xl border-2 border-yellow-300 dark:border-yellow-500/40 bg-gradient-to-b from-yellow-50 to-white dark:from-yellow-900/20 dark:to-slate-800 shadow-sm hover:shadow-md transition-shadow"
                 title={t(`achv.${a.key}_desc`)}
               >
                 <span className="material-symbols-rounded text-3xl text-yellow-500 mb-2">{a.icon}</span>
-                <p className="text-xs font-semibold text-gray-800 text-center leading-tight">{t(`achv.${a.key}`)}</p>
-                <p className="text-[10px] text-gray-400 mt-1">{t(`achv.${a.key}_desc`)}</p>
+                <p className="text-xs font-semibold text-gray-800 dark:text-slate-200 text-center leading-tight">{t(`achv.${a.key}`)}</p>
+                <p className="text-[10px] text-gray-400 dark:text-slate-500 mt-1">{t(`achv.${a.key}_desc`)}</p>
               </div>
             ))}
 
@@ -498,7 +498,7 @@ function ProfilePage() {
             {achievements.locked.map((a) => (
               <div
                 key={a.key}
-                className="relative flex flex-col items-center p-4 rounded-xl border border-gray-200 bg-gray-50 opacity-50 grayscale"
+                className="relative flex flex-col items-center p-4 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 opacity-50 grayscale"
                 title={t(`achv.${a.key}_desc`)}
               >
                 <span className="material-symbols-rounded text-3xl text-gray-400 mb-2">{a.icon}</span>
