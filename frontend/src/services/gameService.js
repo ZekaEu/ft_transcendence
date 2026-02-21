@@ -43,6 +43,12 @@ export const gameService = {
     return response.data
   },
 
+  // ── Achievements ─────────────────────────
+  getAchievements: async () => {
+    const response = await apiClient.get('/game/achievements')
+    return response.data
+  },
+
   // ── Rooms ────────────────────────────────
   getCurrentRoom: async () => {
     const response = await apiClient.get('/game/rooms/current')

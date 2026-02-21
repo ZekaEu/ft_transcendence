@@ -4,8 +4,10 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.game import game_bp
 from app.core.extensions import db, socketio
 from app.auth.models import User
-from app.game.models import GameRoom, GameRoomPlayer, KAHOOT_CATEGORIES, KAHOOT_LANGUAGES, VALID_DIFFICULTIES
-from app.game.models import GameRoom, GameRoomPlayer, UserPowerup, POWERUP_CATALOGUE
+from app.game.models import (
+    GameRoom, GameRoomPlayer, UserPowerup, POWERUP_CATALOGUE,
+    KAHOOT_CATEGORIES, KAHOOT_LANGUAGES, VALID_DIFFICULTIES, ACHIEVEMENTS_CATALOGUE,
+)
 from app.friends.models import Friendship
 
 
@@ -509,3 +511,92 @@ def shop_inventory():
         'inventory': [r.to_dict() for r in records],
         'xp': user.xp if user else 0,
     }), 200
+
+
+# ──────────────────────────────────────────────
+# Achievements
+# ──────────────────────────────────────────────
+@game_bp.route('/achievements', methods=['GET'])
+@jwt_required()
+def get_achievements():
+    """Dynamically compute achievements based on user stats."""
+    user_id = int(get_jwt_identity())
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
+    xp = user.xp or 0
+
+    games_played = GameRoomPlayer.query.join(GameRoom).filter(
+        GameRoomPlayer.user_id == user_id,
+        GameRoom.status == 'finished',
+    ).count()
+
+    # Wins = ranked #1 in finished rooms
+    wins = 0
+    finished = (
+        GameRoomPlayer.query.join(GameRoom)
+        .filter(GameRoomPlayer.user_id == user_id, GameRoom.status == 'finished')
+        .all()
+    )
+    for p in finished:
+        top = (
+            GameRoomPlayer.query.filter_by(room_id=p.room_id)
+            .order_by(GameRoomPlayer.score.desc())
+            .first()
+        )
+        if top and top.user_id == user_id:
+            wins += 1
+
+    friend_count = Friendship.query.filter(
+        db.or_(Friendship.user_id == user_id, Friendship.friend_id == user_id),
+        Friendship.status == 'accepted',
+    ).count()
+
+    rooms_created = GameRoom.query.filter_by(host_id=user_id).count()
+
+    played_3_plus = GameRoomPlayer.query.join(GameRoom).filter(
+        GameRoomPlayer.user_id == user_id, GameRoom.status == 'finished',
+        GameRoom.id.in_(
+            db.session.query(GameRoomPlayer.room_id)
+            .group_by(GameRoomPlayer.room_id)
+            .having(db.func.count(GameRoomPlayer.id) >= 3)
+        )
+    ).first() is not None
+
+    played_5_plus = GameRoomPlayer.query.join(GameRoom).filter(
+        GameRoomPlayer.user_id == user_id, GameRoom.status == 'finished',
+        GameRoom.id.in_(
+            db.session.query(GameRoomPlayer.room_id)
+            .group_by(GameRoomPlayer.room_id)
+            .having(db.func.count(GameRoomPlayer.id) >= 5)
+        )
+    ).first() is not None
+
+    # Map category → current value
+    stat_map = {
+        'xp': xp,
+        'games': games_played,
+        'wins': wins,
+        'social': friend_count,
+        'rooms': rooms_created,
+    }
+
+    unlocked = []
+    locked = []
+    for key, meta in ACHIEVEMENTS_CATALOGUE.items():
+        entry = {'key': key, 'icon': meta['icon'], 'category': meta['category']}
+        # Multiplayer achievements use boolean flags
+        if key == 'play_3_plus':
+            is_unlocked = played_3_plus
+        elif key == 'play_5_plus':
+            is_unlocked = played_5_plus
+        else:
+            is_unlocked = stat_map.get(meta['category'], 0) >= meta['threshold']
+
+        if is_unlocked:
+            unlocked.append(entry)
+        else:
+            locked.append(entry)
+
+    return jsonify({'unlocked': unlocked, 'locked': locked}), 200

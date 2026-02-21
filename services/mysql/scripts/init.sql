@@ -205,6 +205,10 @@ CREATE TABLE IF NOT EXISTS user_powerups (
 
 
 -- ─────────────────────────────────────────────
+
+
+
+-- ─────────────────────────────────────────────
 -- Friendships
 -- ─────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS friendships (
