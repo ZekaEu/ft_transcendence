@@ -146,6 +146,7 @@ class GameRoom(db.Model):
     host_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     game_mode = db.Column(db.String(32), nullable=False, default='classic')  # classic, survival, timed
     max_players = db.Column(db.Integer, nullable=False, default=4)
+    friends_only = db.Column(db.Boolean, nullable=False, default=False)
     status = db.Column(db.String(20), nullable=False, default='waiting')  # waiting, playing, finished
     created_at = db.Column(
         db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc)
@@ -171,6 +172,7 @@ class GameRoom(db.Model):
             'host_avatar': self.host.avatar_url if self.host else None,
             'game_mode': self.game_mode,
             'max_players': self.max_players,
+            'friends_only': self.friends_only,
             'player_count': self.player_count,
             'status': self.status,
             'players': [p.to_dict() for p in self.players],

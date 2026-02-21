@@ -41,7 +41,7 @@ export function Navbar() {
     { name: t('navbar.chat'), path: '/chat', badge: totalUnread },
     { name: t('navbar.ranking'), path: '/ranking' },
     { name: t('navbar.shop'), path: '/shop' },
-    { name: t('navbar.profile'), path: '/profile' },
+    { name: t('navbar.friends'), path: '/friends' },
   ]
 
   return (

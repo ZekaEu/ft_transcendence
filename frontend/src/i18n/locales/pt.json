@@ -5,6 +5,7 @@
         "ranking": "Ranking",
         "shop": "Loja",
         "profile": "Perfil",
+        "friends": "Amigos",
         "level": "Nível"
     },
     "footer": {
@@ -87,7 +88,8 @@
         "startGame": "Iniciar Jogo",
         "startFailed": "Falha ao iniciar o jogo",
         "gameStarting": "O jogo está começando!",
-        "cancel": "Cancelar Busca"
+        "cancel": "Cancelar Busca",
+        "friendsOnly": "Apenas Amigos"
     },
     "game": {
         "loading": "Carregando jogo...",
@@ -147,7 +149,30 @@
         "addFriend": "Adicionar Amigo",
         "remove": "Remover",
         "onlineNow": "Online agora",
-        "lastSeen": "Visto por último recentemente"
+        "lastSeen": "Visto por último recentemente",
+        "online": "Online",
+        "offline": "Offline",
+        "findFriends": "Encontrar Amigos",
+        "pendingRequests": "Pedidos Pendentes",
+        "receivedRequests": "Pedidos Recebidos",
+        "sentRequests": "Pedidos Enviados",
+        "pendingCount": "pendentes",
+        "pendingRequest": "Pedido Pendente",
+        "noPending": "Nenhum pedido pendente",
+        "noSent": "Nenhum pedido enviado",
+        "noResults": "Nenhum usuário encontrado",
+        "accept": "Aceitar",
+        "reject": "Rejeitar",
+        "cancel": "Cancelar",
+        "requestSent": "Pedido de amizade enviado!",
+        "requestFailed": "Falha ao enviar pedido",
+        "requestAccepted": "Pedido de amizade aceito!",
+        "requestRejected": "Pedido rejeitado",
+        "requestCancelled": "Pedido cancelado",
+        "friendRemoved": "Amigo removido",
+        "actionFailed": "Ação falhou",
+        "searchFailed": "Busca falhou",
+        "alreadyFriends": "Já são Amigos"
     },
     "notFound": {
         "title": "404",

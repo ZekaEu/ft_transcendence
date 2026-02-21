@@ -21,8 +21,8 @@ export const gameService = {
     return response.data
   },
 
-  createRoom: async ({ name, game_mode, max_players }) => {
-    const response = await apiClient.post('/game/rooms', { name, game_mode, max_players })
+  createRoom: async ({ name, game_mode, max_players, friends_only }) => {
+    const response = await apiClient.post('/game/rooms', { name, game_mode, max_players, friends_only })
     return response.data
   },
 

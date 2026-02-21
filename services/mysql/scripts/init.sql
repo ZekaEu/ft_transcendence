@@ -2,11 +2,11 @@
 -- Triple Trouble Trivia – Database Schema
 -- =============================================
 
-CREATE DATABASE IF NOT EXISTS trivia_db
+CREATE DATABASE IF NOT EXISTS triviadb
     CHARACTER SET utf8mb4
     COLLATE utf8mb4_unicode_ci;
 
-USE trivia_db;
+USE triviadb;
 
 -- ─────────────────────────────────────────────
 -- Users table
@@ -143,6 +143,7 @@ CREATE TABLE IF NOT EXISTS game_rooms (
     host_id     INT             NOT NULL,
     game_mode   VARCHAR(32)     NOT NULL DEFAULT 'classic',
     max_players INT             NOT NULL DEFAULT 4,
+    friends_only BOOLEAN        NOT NULL DEFAULT FALSE,
     status      VARCHAR(20)     NOT NULL DEFAULT 'waiting',
     created_at  DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -176,4 +177,32 @@ CREATE TABLE IF NOT EXISTS game_room_players (
 
     CONSTRAINT uq_room_player
         UNIQUE (room_id, user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- ─────────────────────────────────────────────
+-- Friendships
+-- ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS friendships (
+    id          INT AUTO_INCREMENT PRIMARY KEY,
+    user_id     INT             NOT NULL,
+    friend_id   INT             NOT NULL,
+    status      VARCHAR(20)     NOT NULL DEFAULT 'pending',
+    created_at  DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at  DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_friendship_user
+        FOREIGN KEY (user_id) REFERENCES users(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_friendship_friend
+        FOREIGN KEY (friend_id) REFERENCES users(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT uq_friendship
+        UNIQUE (user_id, friend_id),
+
+    INDEX idx_friendship_user (user_id),
+    INDEX idx_friendship_friend (friend_id),
+    INDEX idx_friendship_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

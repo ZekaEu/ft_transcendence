@@ -3,12 +3,16 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../hooks/useAuth'
 import apiClient from '../services/apiClient'
+import { friendService } from '../services/friendService'
 
 function HomePage() {
   const { t } = useTranslation()
   const { user } = useAuth()
   const [onlineCount, setOnlineCount] = useState(0)
+  const [onlineFriends, setOnlineFriends] = useState([])
+  const [allFriends, setAllFriends] = useState([])
 
+  // Fetch online count
   useEffect(() => {
     const fetchOnline = async () => {
       try {
@@ -21,6 +25,44 @@ function HomePage() {
     fetchOnline()
     const interval = setInterval(fetchOnline, 30000)
     return () => clearInterval(interval)
+  }, [])
+
+  // Fetch friends from backend
+  useEffect(() => {
+    const fetchFriends = async () => {
+      try {
+        const friends = await friendService.getFriends()
+        setAllFriends(friends)
+        setOnlineFriends(friends.filter((f) => f.is_online))
+      } catch (err) {
+        console.error('Failed to fetch friends:', err)
+      }
+    }
+    fetchFriends()
+    const interval = setInterval(fetchFriends, 15000)
+    return () => clearInterval(interval)
+  }, [])
+
+  // Real-time friend status via socket
+  useEffect(() => {
+    const token = localStorage.getItem('authToken')
+    if (!token) return
+
+    friendService.connectSocket(token)
+
+    friendService.onFriendStatus((data) => {
+      setAllFriends((prev) => {
+        const updated = prev.map((f) =>
+          f.id === data.user_id ? { ...f, is_online: data.is_online } : f
+        )
+        setOnlineFriends(updated.filter((f) => f.is_online))
+        return updated
+      })
+    })
+
+    return () => {
+      friendService.offFriendStatus()
+    }
   }, [])
 
   return (
@@ -121,17 +163,31 @@ function HomePage() {
             <span className="bg-green-500 w-2 h-2 rounded-full"></span>
           </h3>
           <div className="space-y-4">
-            <FriendItem
-              name="Felix_One"
-              status={t('home.playing')}
-              avatar="https://lh3.googleusercontent.com/aida-public/AB6AXuDmwMhaQR8XCBKdyX6ICfmG-KiG-ByIpqh_ShFw50NdDBVfbZqd5tlwFSrCpgL0hCsCQ-Qt1umnli60oAJWyTMGaPFBmsDDjeks42YicAlAyWBAnjaHA0dOA8vIoSmpExgvffLaUEsVSqhhmkL92I0yq3970wiHktQncfu6eOLk5U1WmpJJ5AUvMBFcN_hAFO7tyidvUUeR-hXo9qtYdDE96qRkyht_68D0OLOQYAknKSzs4K2vaDomvBGwhLGNaaBlAW6syEFmjw"
-              online
-            />
-            <FriendItem
-              name="LunaStar"
-              status={t('home.offline')}
-              avatar="https://lh3.googleusercontent.com/aida-public/AB6AXuDqYtYpHNqueaHCJ_KEuUqO79srB5qn_H1YdoNlxmnS2skXpoWyKJLDXcIymacWHmcBwX2ZhVvNtjq4frTME4uQinEwymKJFAmmXi-8_hALykEUHl-7J9ykPdrNShl9bE-8tYOCNSfKkXLKHi-QQNFOVbae6gmqvhQYQF_ialDJg2-qF19BuNCSdAN6vqh01MAxV7hcNz8HvzfBS6vK31thidG7DHHhdlxVwZ1D7nakVn_clnU9-DR1Q6V9uOC1UKCxHndExRlOhA"
-            />
+            {onlineFriends.length > 0 ? (
+              onlineFriends.slice(0, 5).map((friend) => (
+                <FriendItem
+                  key={friend.id}
+                  name={friend.display_name || friend.username}
+                  status={t('home.online')}
+                  avatar={friend.avatar_url}
+                  online={true}
+                />
+              ))
+            ) : allFriends.length > 0 ? (
+              allFriends.slice(0, 5).map((friend) => (
+                <FriendItem
+                  key={friend.id}
+                  name={friend.display_name || friend.username}
+                  status={friend.is_online ? t('home.online') : t('home.offline')}
+                  avatar={friend.avatar_url}
+                  online={friend.is_online}
+                />
+              ))
+            ) : (
+              <p className="text-sm text-slate-400 dark:text-slate-500 text-center py-4">
+                {t('friends.noFriends')}
+              </p>
+            )}
           </div>
           <Link to="/friends" className="block w-full py-2 text-sm font-bold text-slate-400 hover:text-primary-500 text-center transition-colors border-t border-slate-200 dark:border-slate-700 mt-4 pt-4">
             {t('home.viewAll')}
@@ -197,7 +253,13 @@ function FriendItem({ name, status, avatar, online }) {
     <div className={`flex items-center justify-between ${!online ? 'opacity-60' : ''}`}>
       <div className="flex items-center gap-3">
         <div className="relative">
-          <img src={avatar} alt={name} className="w-8 h-8 rounded-full bg-slate-100" />
+          {avatar ? (
+            <img src={avatar} alt={name} className="w-8 h-8 rounded-full bg-slate-100 object-cover" />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-400 to-secondary-400 flex items-center justify-center text-white text-xs font-bold">
+              {name?.charAt(0).toUpperCase()}
+            </div>
+          )}
           {online && <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 border-2 border-white dark:border-slate-900 rounded-full"></div>}
         </div>
         <div>

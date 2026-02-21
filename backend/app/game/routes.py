@@ -5,6 +5,7 @@ from app.game import game_bp
 from app.core.extensions import db, socketio
 from app.auth.models import User
 from app.game.models import GameRoom, GameRoomPlayer
+from app.friends.models import Friendship
 
 
 # ──────────────────────────────────────────────
@@ -34,12 +35,32 @@ def current_room():
 @game_bp.route('/rooms', methods=['GET'])
 @jwt_required()
 def list_rooms():
+    user_id = int(get_jwt_identity())
     mode = request.args.get('mode')
     query = GameRoom.query.filter_by(status='waiting')
     if mode:
         query = query.filter_by(game_mode=mode)
     rooms = query.order_by(GameRoom.created_at.desc()).all()
-    return jsonify([r.to_dict() for r in rooms]), 200
+
+    # Filter out friends_only rooms where user is not friends with host
+    visible_rooms = []
+    for room in rooms:
+        if not room.friends_only:
+            visible_rooms.append(room)
+        elif room.host_id == user_id:
+            visible_rooms.append(room)
+        else:
+            is_friend = Friendship.query.filter(
+                db.or_(
+                    db.and_(Friendship.user_id == user_id, Friendship.friend_id == room.host_id),
+                    db.and_(Friendship.user_id == room.host_id, Friendship.friend_id == user_id),
+                ),
+                Friendship.status == 'accepted',
+            ).first()
+            if is_friend:
+                visible_rooms.append(room)
+
+    return jsonify([r.to_dict() for r in visible_rooms]), 200
 
 
 # ──────────────────────────────────────────────
@@ -54,6 +75,7 @@ def create_room():
     name = (data.get('name') or '').strip()
     game_mode = data.get('game_mode', 'classic')
     max_players = data.get('max_players', 4)
+    friends_only = bool(data.get('friends_only', False))
 
     if not name:
         return jsonify({'message': 'Room name is required'}), 400
@@ -78,6 +100,7 @@ def create_room():
         host_id=user_id,
         game_mode=game_mode,
         max_players=max_players,
+        friends_only=friends_only,
     )
     db.session.add(room)
     db.session.flush()
@@ -119,6 +142,18 @@ def join_room(room_id):
 
     if room.player_count >= room.max_players:
         return jsonify({'message': 'Room is full'}), 400
+
+    # Enforce friends_only: joiner must be friends with host
+    if room.friends_only and room.host_id != user_id:
+        is_friend = Friendship.query.filter(
+            db.or_(
+                db.and_(Friendship.user_id == user_id, Friendship.friend_id == room.host_id),
+                db.and_(Friendship.user_id == room.host_id, Friendship.friend_id == user_id),
+            ),
+            Friendship.status == 'accepted',
+        ).first()
+        if not is_friend:
+            return jsonify({'message': 'This room is friends-only. You must be friends with the host.'}), 403
 
     # Check if already in this room
     if room.players.filter_by(user_id=user_id).first():
