@@ -277,6 +277,8 @@
     "playFirst": "Play some games to see your history here!",
     "rank": "Rank",
     "removeAvatar": "Remove Avatar",
+    "cancelRemoveAvatar": "Cancel removal",
+    "avatarRemoved": "Avatar removed successfully!",
     "saveChanges": "Save Changes",
     "saving": "Saving...",
     "score": "Score",

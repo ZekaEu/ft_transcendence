@@ -172,3 +172,48 @@ def upload_avatar(user_id):
         current_app.logger.error(f"Avatar upload error: {str(e)}")
         return jsonify({'message': 'Failed to upload avatar'}), 500
 
+
+# ──────────────────────────────────────────────
+# Remove/delete user avatar
+# ──────────────────────────────────────────────
+@users_bp.route('/<int:user_id>/avatar', methods=['DELETE'])
+@jwt_required()
+def remove_avatar(user_id):
+    """Remove user avatar"""
+    current_user_id = int(get_jwt_identity())
+
+    # Only allow users to delete their own avatar
+    if current_user_id != user_id:
+        return jsonify({'message': 'Unauthorized'}), 403
+
+    user = User.query.get(user_id)
+
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+
+    # If user has an avatar, delete the file
+    if user.avatar_url:
+        try:
+            # Extract filename from URL (e.g., "/uploads/filename.png" -> "filename.png")
+            filename = user.avatar_url.split('/')[-1]
+            upload_folder = current_app.config['UPLOAD_FOLDER']
+            filepath = os.path.join(upload_folder, filename)
+
+            # Delete the file if it exists
+            if os.path.exists(filepath):
+                os.remove(filepath)
+                current_app.logger.info(f"Avatar file deleted: {filepath}")
+
+        except Exception as e:
+            current_app.logger.error(f"Error deleting avatar file: {str(e)}")
+            # Continue anyway - clear the avatar_url from database
+
+    # Clear the avatar_url from database
+    user.avatar_url = None
+    user.updated_at = datetime.now(timezone.utc)
+    db.session.commit()
+
+    return jsonify({
+        'message': 'Avatar removed successfully',
+        'user': user.to_dict()
+    }), 200

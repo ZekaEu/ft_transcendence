@@ -277,6 +277,8 @@
         "playFirst": "Jogue algumas partidas para ver seu histórico aqui!",
         "rank": "Posição",
         "removeAvatar": "Remover Avatar",
+        "cancelRemoveAvatar": "Cancelar remoção",
+        "avatarRemoved": "Avatar removido com sucesso!",
         "saveChanges": "Salvar Alterações",
         "saving": "Salvando...",
         "score": "Pontuação",
