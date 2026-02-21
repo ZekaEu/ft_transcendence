@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from '../hooks/useAuth'
 import apiClient from '../services/apiClient'
 import { friendService } from '../services/friendService'
+import { gameService } from '../services/gameService'
 
 function HomePage() {
   const { t } = useTranslation()
@@ -11,6 +12,8 @@ function HomePage() {
   const [onlineCount, setOnlineCount] = useState(0)
   const [onlineFriends, setOnlineFriends] = useState([])
   const [allFriends, setAllFriends] = useState([])
+  const [achievements, setAchievements] = useState({ unlocked: [], locked: [] })
+  const [loadingAchievements, setLoadingAchievements] = useState(true)
 
   // Fetch online count - re-runs when user changes (login)
   const fetchOnlineCount = useCallback(async () => {
@@ -46,6 +49,24 @@ function HomePage() {
     const interval = setInterval(fetchFriends, 15000)
     return () => clearInterval(interval)
   }, [user, fetchFriends])
+
+  // Fetch achievements
+  useEffect(() => {
+    const fetchAchievements = async () => {
+      const token = localStorage.getItem('authToken')
+      if (!token) return
+      setLoadingAchievements(true)
+      try {
+        const data = await gameService.getAchievements()
+        setAchievements(data)
+      } catch (err) {
+        console.error('Failed to load achievements:', err)
+      } finally {
+        setLoadingAchievements(false)
+      }
+    }
+    fetchAchievements()
+  }, [user])
 
   // Real-time friend status via socket - also updates online count
   useEffect(() => {
@@ -93,7 +114,7 @@ function HomePage() {
             <span className="material-icons-round text-4xl">play_arrow</span>
             {t('home.playNow')}
             <div className="absolute -top-3 -right-3 bg-yellow-400 text-yellow-900 text-xs px-2 py-1 rounded-full animate-bounce font-bold shadow-sm">
-              +50 XP
+              +XP
             </div>
           </Link>
           <div className="mt-6 flex items-center gap-2 text-slate-400 dark:text-slate-500">
@@ -106,24 +127,61 @@ function HomePage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Achievements */}
         <div className="lg:col-span-2 glass rounded-2xl p-8 space-y-6">
-          <h3 className="text-xl font-bold flex items-center gap-2">
-            <span className="material-icons-round text-yellow-500">stars</span>
-            {t('home.recentAchievements')}
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <AchievementCard
-              title={t('home.triviaKing')}
-              description={t('home.triviaKingDesc')}
-              icon="local_fire_department"
-              color="blue"
-            />
-            <AchievementCard
-              title={t('home.fastLearner')}
-              description={t('home.fastLearnerDesc')}
-              icon="psychology"
-              color="green"
-            />
+          <div className="flex items-center justify-between">
+            <h3 className="text-xl font-bold flex items-center gap-2">
+              <span className="material-icons-round text-yellow-500">stars</span>
+              {t('profile.achievements')}
+            </h3>
+            {!loadingAchievements && (
+              <span className="text-sm text-slate-400 font-semibold">
+                {achievements.unlocked.length}/{achievements.unlocked.length + achievements.locked.length}
+              </span>
+            )}
           </div>
+
+          {/* Progress bar */}
+          {!loadingAchievements && (
+            <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
+              <div
+                className="bg-gradient-to-r from-yellow-400 to-yellow-600 h-2 rounded-full transition-all duration-500"
+                style={{
+                  width: `${achievements.unlocked.length + achievements.locked.length > 0
+                    ? (achievements.unlocked.length / (achievements.unlocked.length + achievements.locked.length)) * 100
+                    : 0}%`
+                }}
+              />
+            </div>
+          )}
+
+          {loadingAchievements ? (
+            <div className="flex justify-center py-8">
+              <span className="material-icons-round animate-spin text-slate-400">refresh</span>
+              <span className="ml-2 text-sm text-slate-400">{t('profile.loadingAchievements')}</span>
+            </div>
+          ) : (
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+              {achievements.unlocked.map((a) => (
+                <div
+                  key={a.key}
+                  className="flex flex-col items-center p-3 rounded-xl border-2 border-yellow-300 bg-gradient-to-b from-yellow-50 to-white dark:from-yellow-900/20 dark:to-slate-800/50 shadow-sm hover:shadow-md transition-shadow"
+                  title={t(`achv.${a.key}_desc`)}
+                >
+                  <span className="material-symbols-rounded text-2xl text-yellow-500 mb-1">{a.icon}</span>
+                  <p className="text-[10px] font-semibold text-slate-700 dark:text-slate-200 text-center leading-tight">{t(`achv.${a.key}`)}</p>
+                </div>
+              ))}
+              {achievements.locked.map((a) => (
+                <div
+                  key={a.key}
+                  className="relative flex flex-col items-center p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/30 opacity-40 grayscale"
+                  title={t(`achv.${a.key}_desc`)}
+                >
+                  <span className="material-symbols-rounded text-2xl text-slate-400 mb-1">{a.icon}</span>
+                  <p className="text-[10px] font-semibold text-slate-500 text-center leading-tight">{t(`achv.${a.key}`)}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Online Friends */}
@@ -163,25 +221,6 @@ function HomePage() {
             {t('home.viewAll')}
           </Link>
         </div>
-      </div>
-    </div>
-  )
-}
-
-function AchievementCard({ title, description, icon, color }) {
-  const bgColors = {
-    blue: 'bg-blue-100 dark:bg-blue-900/30 text-blue-500',
-    green: 'bg-green-100 dark:bg-green-900/30 text-green-500',
-  }
-
-  return (
-    <div className="flex items-center gap-4 bg-white/50 dark:bg-slate-800/50 p-4 rounded-xl border border-white/20">
-      <div className={`p-2 rounded-lg ${bgColors[color]}`}>
-        <span className="material-icons-round">{icon}</span>
-      </div>
-      <div>
-        <p className="font-bold text-sm">{title}</p>
-        <p className="text-xs text-slate-500">{description}</p>
       </div>
     </div>
   )

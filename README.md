@@ -1061,7 +1061,6 @@ TOTAL:                16 pontos
 | **Real-time Score Updates** | Integrou WebSocket listener em GamePage; React state atualiza imediatamente |
 | **Avatar Upload Preview** | Implementou FileReader API para preview local antes de enviar; validação de size/type |
 | **Leaderboard Pagination** | Lazy loading de próximas páginas; botão "Load More" evita carregar 10K rows de uma vez |
-| **Chat Message Scroll** | Auto-scroll para mensagem mais recente; preserva posição se usuário scrollar para cima |
 | **Modal Z-index Issues** | Criou sistema de z-index em Tailwind config; modals aninhados funcionam corretamente |
 | **Tailwind Dark Mode** | Testou compatibilidade; usou `dark:` prefix em todos os componentes; toggle persiste em localStorage |
 

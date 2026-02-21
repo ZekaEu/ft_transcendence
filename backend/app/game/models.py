@@ -623,3 +623,40 @@ class GameRoomPlayer(db.Model):
 
     def __repr__(self):
         return f'<GameRoomPlayer room={self.room_id} user={self.user_id}>'
+
+
+# ──────────────────────────────────────────────
+# Achievements
+# ──────────────────────────────────────────────
+ACHIEVEMENTS_CATALOGUE = {
+    # ── XP-based ──
+    'xp_100':        {'icon': 'star',              'category': 'xp',     'threshold': 100},
+    'xp_1000':       {'icon': 'star_half',         'category': 'xp',     'threshold': 1000},
+    'xp_5000':       {'icon': 'stars',             'category': 'xp',     'threshold': 5000},
+    'xp_10000':      {'icon': 'military_tech',     'category': 'xp',     'threshold': 10000},
+    'xp_50000':      {'icon': 'workspace_premium', 'category': 'xp',     'threshold': 50000},
+    'xp_100000':     {'icon': 'diamond',           'category': 'xp',     'threshold': 100000},
+    # ── Games played ──
+    'first_game':    {'icon': 'sports_esports',    'category': 'games',  'threshold': 1},
+    'games_5':       {'icon': 'videogame_asset',   'category': 'games',  'threshold': 5},
+    'games_10':      {'icon': 'stadia_controller', 'category': 'games',  'threshold': 10},
+    'games_25':      {'icon': 'gamepad',           'category': 'games',  'threshold': 25},
+    'games_50':      {'icon': 'casino',            'category': 'games',  'threshold': 50},
+    'games_100':     {'icon': 'emoji_events',      'category': 'games',  'threshold': 100},
+    # ── Wins ──
+    'first_win':     {'icon': 'emoji_events',      'category': 'wins',   'threshold': 1},
+    'wins_5':        {'icon': 'military_tech',     'category': 'wins',   'threshold': 5},
+    'wins_10':       {'icon': 'trophy',            'category': 'wins',   'threshold': 10},
+    'wins_25':       {'icon': 'local_fire_department', 'category': 'wins', 'threshold': 25},
+    # ── Social ──
+    'first_friend':  {'icon': 'person_add',        'category': 'social', 'threshold': 1},
+    'friends_5':     {'icon': 'group',             'category': 'social', 'threshold': 5},
+    'friends_10':    {'icon': 'groups',            'category': 'social', 'threshold': 10},
+    # ── Rooms ──
+    'first_room':    {'icon': 'meeting_room',      'category': 'rooms',  'threshold': 1},
+    'rooms_5':       {'icon': 'door_front',        'category': 'rooms',  'threshold': 5},
+    'rooms_10':      {'icon': 'other_houses',      'category': 'rooms',  'threshold': 10},
+    # ── Multiplayer ──
+    'play_3_plus':   {'icon': 'diversity_3',       'category': 'multi',  'threshold': 1},
+    'play_5_plus':   {'icon': 'group_work',        'category': 'multi',  'threshold': 1},
+}

@@ -51,6 +51,10 @@ function ProfilePage() {
   const [stats, setStats] = useState({ total: 0, wins: 0, losses: 0, win_rate: 0 })
   const [loadingHistory, setLoadingHistory] = useState(true)
 
+  // Achievements state
+  const [achievements, setAchievements] = useState({ unlocked: [], locked: [] })
+  const [loadingAchievements, setLoadingAchievements] = useState(true)
+
   // Fetch match history
   useEffect(() => {
     const fetchHistory = async () => {
@@ -67,6 +71,22 @@ function ProfilePage() {
     }
     fetchHistory()
   }, [historyFilter])
+
+  // Fetch achievements
+  useEffect(() => {
+    const fetchAchievements = async () => {
+      setLoadingAchievements(true)
+      try {
+        const data = await gameService.getAchievements()
+        setAchievements(data)
+      } catch (err) {
+        console.error('Failed to load achievements:', err)
+      } finally {
+        setLoadingAchievements(false)
+      }
+    }
+    fetchAchievements()
+  }, [])
 
   const handleAvatarChange = (e) => {
     const file = e.target.files?.[0]
@@ -371,6 +391,68 @@ function ProfilePage() {
                     </p>
                   )}
                 </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+
+      {/* ── Achievements Section ── */}
+      <Card className="mt-8">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-gray-900">{t('profile.achievements')}</h2>
+          {!loadingAchievements && (
+            <span className="text-sm text-gray-500">
+              {achievements.unlocked.length}/{achievements.unlocked.length + achievements.locked.length}
+            </span>
+          )}
+        </div>
+
+        {/* Progress bar */}
+        {!loadingAchievements && (
+          <div className="mb-6">
+            <div className="w-full bg-gray-200 rounded-full h-2.5">
+              <div
+                className="bg-gradient-to-r from-yellow-400 to-yellow-600 h-2.5 rounded-full transition-all duration-500"
+                style={{
+                  width: `${achievements.unlocked.length + achievements.locked.length > 0
+                    ? (achievements.unlocked.length / (achievements.unlocked.length + achievements.locked.length)) * 100
+                    : 0}%`
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        {loadingAchievements ? (
+          <div className="flex justify-center py-12">
+            <Spinner />
+            <span className="ml-3 text-gray-500">{t('profile.loadingAchievements')}</span>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            {/* Unlocked achievements */}
+            {achievements.unlocked.map((a) => (
+              <div
+                key={a.key}
+                className="relative flex flex-col items-center p-4 rounded-xl border-2 border-yellow-300 bg-gradient-to-b from-yellow-50 to-white shadow-sm hover:shadow-md transition-shadow"
+                title={t(`achv.${a.key}_desc`)}
+              >
+                <span className="material-symbols-rounded text-3xl text-yellow-500 mb-2">{a.icon}</span>
+                <p className="text-xs font-semibold text-gray-800 text-center leading-tight">{t(`achv.${a.key}`)}</p>
+                <p className="text-[10px] text-gray-400 mt-1">{t(`achv.${a.key}_desc`)}</p>
+              </div>
+            ))}
+
+            {/* Locked achievements */}
+            {achievements.locked.map((a) => (
+              <div
+                key={a.key}
+                className="relative flex flex-col items-center p-4 rounded-xl border border-gray-200 bg-gray-50 opacity-50 grayscale"
+                title={t(`achv.${a.key}_desc`)}
+              >
+                <span className="material-symbols-rounded text-3xl text-gray-400 mb-2">{a.icon}</span>
+                <p className="text-xs font-semibold text-gray-500 text-center leading-tight">{t(`achv.${a.key}`)}</p>
               </div>
             ))}
           </div>
