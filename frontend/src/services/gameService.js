@@ -91,6 +91,11 @@ export const gameService = {
     return response.data
   },
 
+  spectateRoom: async (roomId) => {
+    const response = await apiClient.post(`/game/rooms/${roomId}/spectate`)
+    return response.data
+  },
+
   // ── Socket.IO (namespace /game) ──────────
   connectSocket: (token) => {
     if (gameSocket?.connected) return gameSocket
@@ -125,8 +130,8 @@ export const gameService = {
   getSocket: () => gameSocket,
 
   // ── Socket helpers ───────────────────────
-  joinGameRoom: (roomId, token) => {
-    gameSocket?.emit('join_game_room', { room_id: roomId, token })
+  joinGameRoom: (roomId, token, spectator = false) => {
+    gameSocket?.emit('join_game_room', { room_id: roomId, token, spectator })
   },
 
   leaveGameRoom: (roomId) => {

@@ -152,6 +152,7 @@
     "score": "Puntuación",
     "showAnswer": "Mostrar Respuesta",
     "timeRemaining": "Tiempo Restante",
+    "spectating": "Estás viendo este juego",
     "you": "tú",
     "yourRank": "Tu Posición"
   },
@@ -231,6 +232,9 @@
     "roomNamePlaceholder": "Mi sala increíble...",
     "startFailed": "Error al iniciar el juego",
     "startGame": "Iniciar Juego",
+    "inProgress": "En Curso",
+    "spectate": "Ver Partida",
+    "spectateFailed": "Error al conectar como espectador",
     "subtitle": "Únete a una sala o crea tu propia partida",
     "title": "Salas de Juego",
     "waitingPlayers": "Esperando jugadores"
