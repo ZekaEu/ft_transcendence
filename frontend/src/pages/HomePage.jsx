@@ -113,30 +113,6 @@ function HomePage() {
             />
           </div>
         </div>
-
-        {/* Online Friends */}
-        <div className="glass rounded-2xl p-8 space-y-6">
-          <h3 className="text-xl font-bold flex items-center justify-between">
-            {t('home.friends')}
-            <span className="bg-green-500 w-2 h-2 rounded-full"></span>
-          </h3>
-          <div className="space-y-4">
-            <FriendItem
-              name="Felix_One"
-              status={t('home.playing')}
-              avatar="https://lh3.googleusercontent.com/aida-public/AB6AXuDmwMhaQR8XCBKdyX6ICfmG-KiG-ByIpqh_ShFw50NdDBVfbZqd5tlwFSrCpgL0hCsCQ-Qt1umnli60oAJWyTMGaPFBmsDDjeks42YicAlAyWBAnjaHA0dOA8vIoSmpExgvffLaUEsVSqhhmkL92I0yq3970wiHktQncfu6eOLk5U1WmpJJ5AUvMBFcN_hAFO7tyidvUUeR-hXo9qtYdDE96qRkyht_68D0OLOQYAknKSzs4K2vaDomvBGwhLGNaaBlAW6syEFmjw"
-              online
-            />
-            <FriendItem
-              name="LunaStar"
-              status={t('home.offline')}
-              avatar="https://lh3.googleusercontent.com/aida-public/AB6AXuDqYtYpHNqueaHCJ_KEuUqO79srB5qn_H1YdoNlxmnS2skXpoWyKJLDXcIymacWHmcBwX2ZhVvNtjq4frTME4uQinEwymKJFAmmXi-8_hALykEUHl-7J9ykPdrNShl9bE-8tYOCNSfKkXLKHi-QQNFOVbae6gmqvhQYQF_ialDJg2-qF19BuNCSdAN6vqh01MAxV7hcNz8HvzfBS6vK31thidG7DHHhdlxVwZ1D7nakVn_clnU9-DR1Q6V9uOC1UKCxHndExRlOhA"
-            />
-          </div>
-          <Link to="/friends" className="block w-full py-2 text-sm font-bold text-slate-400 hover:text-primary-500 text-center transition-colors border-t border-slate-200 dark:border-slate-700 mt-4 pt-4">
-            {t('home.viewAll')}
-          </Link>
-        </div>
       </div>
     </div>
   )
