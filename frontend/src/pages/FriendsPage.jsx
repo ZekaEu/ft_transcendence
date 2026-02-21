@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { useTranslation } from 'react-i18next'
 import { Button, Input, Card, Avatar, Spinner, Badge } from '../components/common'
@@ -15,7 +15,9 @@ function FriendsPage() {
   const [loading, setLoading] = useState(true)
   const [searchLoading, setSearchLoading] = useState(false)
   const [searchResults, setSearchResults] = useState([])
+  const [searchDone, setSearchDone] = useState(false)
   const [activeTab, setActiveTab] = useState('friends')
+  const searchTimerRef = useRef(null)
 
   const fetchFriends = useCallback(async () => {
     try {
@@ -89,20 +91,38 @@ function FriendsPage() {
     }
   }, [fetchFriends, fetchPending, fetchSent])
 
-  const handleSearch = async (e) => {
-    e.preventDefault()
-    if (!searchQuery.trim() || searchQuery.trim().length < 2) return
+  // Debounced live search as user types
+  useEffect(() => {
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current)
+
+    const query = searchQuery.trim()
+    if (query.length < 2) {
+      setSearchResults([])
+      setSearchDone(false)
+      setSearchLoading(false)
+      return
+    }
 
     setSearchLoading(true)
-    try {
-      const data = await friendService.searchUsers(searchQuery.trim())
-      setSearchResults(data)
-    } catch (err) {
-      toast.error(t('friends.searchFailed'))
-    } finally {
-      setSearchLoading(false)
+    setSearchDone(false)
+
+    searchTimerRef.current = setTimeout(async () => {
+      try {
+        const data = await friendService.searchUsers(query)
+        setSearchResults(data)
+      } catch (err) {
+        toast.error(t('friends.searchFailed'))
+        setSearchResults([])
+      } finally {
+        setSearchLoading(false)
+        setSearchDone(true)
+      }
+    }, 400)
+
+    return () => {
+      if (searchTimerRef.current) clearTimeout(searchTimerRef.current)
     }
-  }
+  }, [searchQuery, t])
 
   const handleSendRequest = async (friendId) => {
     try {
@@ -313,22 +333,51 @@ function FriendsPage() {
       {/* Search Tab */}
       {activeTab === 'search' && (
         <div className="space-y-4">
-          <form onSubmit={handleSearch} className="flex gap-2">
-            <div className="flex-1">
-              <Input
-                placeholder={t('friends.searchPlaceholder')}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                disabled={searchLoading}
-              />
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <span className="material-icons-round text-slate-400 text-xl">search</span>
             </div>
-            <Button type="submit" disabled={searchLoading || searchQuery.trim().length < 2}>
-              {searchLoading ? <Spinner size="sm" /> : t('friends.search')}
-            </Button>
-          </form>
+            <input
+              type="text"
+              placeholder={t('friends.searchPlaceholder')}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              autoFocus
+              className="w-full pl-12 pr-12 py-3.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all text-base"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition"
+              >
+                <span className="material-icons-round text-xl">close</span>
+              </button>
+            )}
+          </div>
 
-          {searchResults.length > 0 && (
+          {/* Hint when input is empty or too short */}
+          {searchQuery.trim().length < 2 && !searchLoading && (
+            <div className="text-center py-10 space-y-3">
+              <span className="material-icons-round text-5xl text-slate-300 dark:text-slate-600">person_search</span>
+              <p className="text-slate-500 dark:text-slate-400">{t('friends.searchHint')}</p>
+            </div>
+          )}
+
+          {/* Loading indicator */}
+          {searchLoading && (
+            <div className="flex items-center justify-center gap-3 py-10">
+              <Spinner size="sm" />
+              <span className="text-slate-500 dark:text-slate-400 font-medium">{t('friends.searching')}</span>
+            </div>
+          )}
+
+          {/* Results */}
+          {!searchLoading && searchResults.length > 0 && (
             <div className="space-y-2">
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-widest px-1">
+                <span className="material-icons-round text-sm text-green-500">check_circle</span>
+                {t('friends.resultsFound', { count: searchResults.length })}
+              </div>
               {searchResults.map((result) => (
                 <div key={result.id} className="glass rounded-xl p-4 border border-white/10 flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -363,8 +412,12 @@ function FriendsPage() {
             </div>
           )}
 
-          {searchResults.length === 0 && searchQuery && !searchLoading && (
-            <p className="text-center text-slate-500 dark:text-slate-400 py-8">{t('friends.noResults')}</p>
+          {/* No results found (search completed) */}
+          {!searchLoading && searchDone && searchResults.length === 0 && searchQuery.trim().length >= 2 && (
+            <div className="text-center py-10 space-y-3">
+              <span className="material-icons-round text-5xl text-slate-300 dark:text-slate-600">search_off</span>
+              <p className="text-slate-500 dark:text-slate-400 font-medium">{t('friends.noResults')}</p>
+            </div>
           )}
         </div>
       )}

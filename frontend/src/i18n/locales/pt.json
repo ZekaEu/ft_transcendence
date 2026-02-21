@@ -130,9 +130,12 @@
         "requestFailed": "Falha ao enviar pedido",
         "requestRejected": "Pedido rejeitado",
         "requestSent": "Pedido de amizade enviado!",
+        "resultsFound": "{{count}} usuário(s) encontrado(s)",
         "search": "Procurar",
         "searchFailed": "Busca falhou",
-        "searchPlaceholder": "Procurar usuários...",
+        "searchHint": "Digite pelo menos 2 caracteres para buscar",
+        "searchPlaceholder": "Buscar por nome de usuário...",
+        "searching": "Buscando...",
         "sentRequests": "Pedidos Enviados",
         "title": "Amigos"
     },
