@@ -25,6 +25,13 @@
   "profile": {
     "myProfile": "Mi Perfil",
     "changeAvatar": "Cambiar avatar",
+    "username": "Nombre de usuario",
+    "email": "Correo electrónico",
+    "displayName": "Nombre de Pantalla",
+    "bio": "Biografía",
+    "bioPlaceholder": "Cuéntanos sobre ti...",
+    "selectFile": "Seleccionar archivo",
+    "removeAvatar": "Eliminar avatar",
     "saveChanges": "Guardar cambios",
     "changePassword": "Cambiar contraseña",
     "matchHistory": "Historial de Partidas",
@@ -42,7 +49,13 @@
     "victory": "Victoria",
     "defeat": "Derrota",
     "mode": "Modo",
-    "loadingHistory": "Cargando historial..."
+    "loadingHistory": "Cargando historial...",
+    "saving": "Guardando...",
+    "updated": "¡Perfil actualizado con éxito!",
+    "updateFailed": "Error al actualizar el perfil",
+    "invalidFileType": "Tipo de archivo inválido. Por favor sube una imagen.",
+    "fileTooLarge": "El archivo es demasiado grande. Tamaño máximo: 5MB",
+    "uploadingAvatar": "Subiendo avatar..."
   },
   "friends": {
     "myFriends": "Mis Amigos",

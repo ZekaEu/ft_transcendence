@@ -273,6 +273,12 @@ function RoomCard({ room, onJoin, userId, t }) {
                         <span className="material-icons-round text-sm">{MODE_ICONS[room.game_mode]}</span>
                         {t(`home.${room.game_mode}`)}
                     </span>
+                    {room.friends_only && (
+                        <span className="inline-flex items-center gap-1 mt-1 ml-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
+                            <span className="material-icons-round text-sm">group</span>
+                            {t('lobby.friendsOnly')}
+                        </span>
+                    )}
                 </div>
                 <div className="flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-full">
                     <span className="material-icons-round text-base">people</span>
@@ -432,6 +438,7 @@ function CreateRoomModal({ onClose, onCreate, t }) {
     const [name, setName] = useState('')
     const [gameMode, setGameMode] = useState('classic')
     const [maxPlayers, setMaxPlayers] = useState(4)
+    const [friendsOnly, setFriendsOnly] = useState(false)
     const [submitting, setSubmitting] = useState(false)
 
     const handleSubmit = async (e) => {
@@ -439,7 +446,7 @@ function CreateRoomModal({ onClose, onCreate, t }) {
         if (!name.trim()) return
         setSubmitting(true)
         const currentLang = i18n.language;
-        await onCreate({ name: name.trim(), game_mode: gameMode, max_players: maxPlayers, question_language: currentLang })
+        await onCreate({ name: name.trim(), game_mode: gameMode, max_players: maxPlayers, friends_only: friendsOnly, question_language: currentLang })
         setSubmitting(false)
     }
 
@@ -509,6 +516,20 @@ function CreateRoomModal({ onClose, onCreate, t }) {
                             <span>2</span>
                             <span>8</span>
                         </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                        <button
+                            type="button"
+                            onClick={() => setFriendsOnly(!friendsOnly)}
+                            className={`relative w-12 h-6 rounded-full transition-colors ${friendsOnly ? 'bg-primary-500' : 'bg-slate-300 dark:bg-slate-600'}`}
+                        >
+                            <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${friendsOnly ? 'translate-x-6' : 'translate-x-0.5'}`} />
+                        </button>
+                        <label className="text-sm font-semibold text-slate-600 dark:text-slate-300 flex items-center gap-2">
+                            <span className="material-icons-round text-base">group</span>
+                            {t('lobby.friendsOnly')}
+                        </label>
                     </div>
 
                     <button

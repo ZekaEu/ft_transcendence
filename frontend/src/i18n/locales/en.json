@@ -5,6 +5,7 @@
     "ranking": "Ranking",
     "shop": "Shop",
     "profile": "Profile",
+    "friends": "Friends",
     "level": "Level"
   },
   "footer": {
@@ -87,7 +88,8 @@
     "startGame": "Start Game",
     "startFailed": "Failed to start game",
     "gameStarting": "Game is starting!",
-    "cancel": "Cancel Search"
+    "cancel": "Cancel Search",
+    "friendsOnly": "Friends Only"
   },
   "game": {
     "loading": "Loading game...",
@@ -124,6 +126,11 @@
     "changeAvatar": "Change Avatar",
     "username": "Username",
     "email": "Email",
+    "displayName": "Display Name",
+    "bio": "Bio",
+    "bioPlaceholder": "Tell us about yourself...",
+    "selectFile": "Select File",
+    "removeAvatar": "Remove Avatar",
     "saveChanges": "Save Changes",
     "saving": "Saving...",
     "changePassword": "Change Password",
@@ -144,7 +151,10 @@
     "victory": "Victory",
     "defeat": "Defeat",
     "mode": "Mode",
-    "loadingHistory": "Loading match history..."
+    "loadingHistory": "Loading match history...",
+    "invalidFileType": "Invalid file type. Please upload an image.",
+    "fileTooLarge": "File is too large. Maximum size: 5MB",
+    "uploadingAvatar": "Uploading avatar..."
   },
   "friends": {
     "title": "Friends",
@@ -155,7 +165,30 @@
     "addFriend": "Add Friend",
     "remove": "Remove",
     "onlineNow": "Online now",
-    "lastSeen": "Last seen recently"
+    "lastSeen": "Last seen recently",
+    "online": "Online",
+    "offline": "Offline",
+    "findFriends": "Find Friends",
+    "pendingRequests": "Pending Requests",
+    "receivedRequests": "Received Requests",
+    "sentRequests": "Sent Requests",
+    "pendingCount": "pending",
+    "pendingRequest": "Request Pending",
+    "noPending": "No pending requests",
+    "noSent": "No sent requests",
+    "noResults": "No users found",
+    "accept": "Accept",
+    "reject": "Reject",
+    "cancel": "Cancel",
+    "requestSent": "Friend request sent!",
+    "requestFailed": "Failed to send request",
+    "requestAccepted": "Friend request accepted!",
+    "requestRejected": "Request rejected",
+    "requestCancelled": "Request cancelled",
+    "friendRemoved": "Friend removed",
+    "actionFailed": "Action failed",
+    "searchFailed": "Search failed",
+    "alreadyFriends": "Already Friends"
   },
   "notFound": {
     "title": "404",

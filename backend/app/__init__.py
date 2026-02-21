@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_cors import CORS
+import os
 
 from app.core.extensions import db, migrate, jwt, socketio
 from app.core.config import Config
@@ -21,17 +22,36 @@ def create_app(config_class=Config):
     from app.auth import auth_bp
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
 
+    from app.users import users_bp
+    app.register_blueprint(users_bp, url_prefix='/api/users')
+
     from app.chat import chat_bp
     app.register_blueprint(chat_bp, url_prefix='/api/chat')
 
     from app.game import game_bp
     app.register_blueprint(game_bp, url_prefix='/api/game')
 
+    from app.friends import friends_bp
+    app.register_blueprint(friends_bp, url_prefix='/api/friends')
+
+    # ── Static files (uploads) ───────────────
+    upload_folder = app.config['UPLOAD_FOLDER']
+    os.makedirs(upload_folder, exist_ok=True)
+
+    @app.route('/uploads/<filename>')
+    def serve_upload(filename):
+        from flask import send_from_directory, abort
+        try:
+            return send_from_directory(upload_folder, filename)
+        except FileNotFoundError:
+            abort(404)
+
     # ── Database tables ─────────────────────
     with app.app_context():
         from app.auth import models  # noqa: F401
         from app.chat import models as chat_models  # noqa: F401
         from app.game import models as game_models  # noqa: F401
+        from app.friends import models as friends_models  # noqa: F401
         db.create_all()
 
     # ── JWT error handlers ──────────────────

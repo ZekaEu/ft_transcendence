@@ -19,7 +19,7 @@ export const userService = {
     formData.append('avatar', file)
     const response = await apiClient.post(`/users/${userId}/avatar`, formData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        'Content-Type': undefined, // Let browser/axios set it automatically
       },
     })
     return response.data
