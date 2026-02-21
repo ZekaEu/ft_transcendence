@@ -44,8 +44,8 @@ int main(int argc, char **argv) {
 
 	FD_ZERO(&currfds);
 	FD_SET(serverfd, &currfds);
-	bzero(clients, sizeof(clients));
-	bzero(&server, sizeof(server));
+	memset(&clients, 0, sizeof(clients));
+	memset(&server, 0, sizeof(server));
 
 	server.sin_port = htons(atoi(argv[1]));
 	server.sin_family = AF_INET;
@@ -78,17 +78,20 @@ int main(int argc, char **argv) {
 					clients[clientfd].id = globalid++;
 					sprintf(sendbuff, "server: client %d just arrived\n", clients[clientfd].id);
 					broadcast(clientfd);
-                    bzero(sendbuff, sizeof(sendbuff));
+                    bzero(sendbuff, strlen(sendbuff));
+					break;
 				} else {
 					ssize_t bufflen = recv(fd, recvbuff, sizeof(recvbuff), 0);
 					if(bufflen <= 0) {
-						sprintf(sendbuff, "server: client %d just left\n", clients[fd].id);
+						bzero(&sendbuff, strlen(sendbuff));
+						sprintf(sendbuff, "server: client %d just left\n", clients[fd].id);					
 						broadcast(fd);
 						FD_CLR(fd, &currfds);
 						close(fd);
-						bzero(sendbuff, sizeof(sendbuff));
-                        bzero(clients[fd].msg, strlen(clients[fd].msg));
+                        bzero(&clients[fd].msg, strlen(clients[fd].msg));
+						break;
 					} else {
+						recvbuff[bufflen] = '\0';
 						for(int i = 0, j = strlen(clients[fd].msg); i < bufflen; i++, j++) {
 							clients[fd].msg[j] = recvbuff[i];
 							if(clients[fd].msg[j] == '\n') {
