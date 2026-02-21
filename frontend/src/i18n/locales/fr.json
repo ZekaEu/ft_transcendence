@@ -152,6 +152,7 @@
     "score": "Score",
     "showAnswer": "Montrer la Réponse",
     "timeRemaining": "Temps Restant",
+    "spectating": "Vous regardez cette partie",
     "you": "vous",
     "yourRank": "Votre Rang"
   },
@@ -231,6 +232,9 @@
     "roomNamePlaceholder": "Ma super salle...",
     "startFailed": "Échec du lancement",
     "startGame": "Lancer la Partie",
+    "inProgress": "En Cours",
+    "spectate": "Regarder",
+    "spectateFailed": "Échec de la connexion en tant que spectateur",
     "subtitle": "Rejoignez une salle ou créez votre propre partie",
     "title": "Salles de Jeu",
     "waitingPlayers": "En attente de joueurs"
@@ -273,6 +277,8 @@
     "playFirst": "Jouez quelques parties pour voir votre historique ici !",
     "rank": "Rang",
     "removeAvatar": "Supprimer l'avatar",
+    "cancelRemoveAvatar": "Annuler la suppression",
+    "avatarRemoved": "Avatar supprimé avec succès!",
     "saveChanges": "Enregistrer les modifications",
     "saving": "Enregistrement...",
     "score": "Score",

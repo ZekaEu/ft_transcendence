@@ -25,6 +25,12 @@ export const userService = {
     return response.data
   },
 
+  // Remove avatar
+  removeAvatar: async (userId) => {
+    const response = await apiClient.delete(`/users/${userId}/avatar`)
+    return response.data
+  },
+
   // Get friends list
   getFriendsList: async (userId) => {
     const response = await apiClient.get(`/users/${userId}/friends`)

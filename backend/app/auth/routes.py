@@ -13,6 +13,7 @@ from flask_jwt_extended import (
 from app.auth import auth_bp
 from app.core.extensions import db
 from app.auth.models import User, OAuthAccount, RevokedToken
+from app.auth.utils import setup_default_avatar
 
 
 # ──────────────────────────────────────────────
@@ -49,6 +50,12 @@ def register():
 
     db.session.add(user)
     db.session.commit()
+
+    # Setup default avatar for new user
+    avatar_url = setup_default_avatar(user.id)
+    if avatar_url:
+        user.avatar_url = avatar_url
+        db.session.commit()
 
     access_token = create_access_token(identity=str(user.id))
     refresh_token = create_refresh_token(identity=str(user.id))
@@ -275,6 +282,12 @@ def oauth_42_callback():
             db.session.add(user)
             db.session.flush()
 
+            # Setup default avatar if OAuth provider didn't provide one
+            if not avatar_42:
+                avatar_url = setup_default_avatar(user.id)
+                if avatar_url:
+                    user.avatar_url = avatar_url
+
         # Create the OAuth link
         oauth_account = OAuthAccount(
             user_id=user.id,
@@ -407,6 +420,12 @@ def oauth_google_callback():
             )
             db.session.add(user)
             db.session.flush()
+
+            # Setup default avatar if OAuth provider didn't provide one
+            if not google_avatar:
+                avatar_url = setup_default_avatar(user.id)
+                if avatar_url:
+                    user.avatar_url = avatar_url
 
         oauth_account = OAuthAccount(
             user_id=user.id,

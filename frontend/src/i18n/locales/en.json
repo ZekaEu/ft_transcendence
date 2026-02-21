@@ -152,6 +152,7 @@
     "score": "Score",
     "showAnswer": "Show Answer",
     "timeRemaining": "Time Remaining",
+    "spectating": "You are spectating this game",
     "you": "you",
     "yourRank": "Your Rank"
   },
@@ -231,6 +232,9 @@
     "roomNamePlaceholder": "My awesome room...",
     "startFailed": "Failed to start game",
     "startGame": "Start Game",
+    "inProgress": "In Progress",
+    "spectate": "Spectate",
+    "spectateFailed": "Failed to spectate room",
     "subtitle": "Join a room or create your own match",
     "title": "Game Rooms",
     "waitingPlayers": "Waiting for players"
@@ -273,6 +277,8 @@
     "playFirst": "Play some games to see your history here!",
     "rank": "Rank",
     "removeAvatar": "Remove Avatar",
+    "cancelRemoveAvatar": "Cancel removal",
+    "avatarRemoved": "Avatar removed successfully!",
     "saveChanges": "Save Changes",
     "saving": "Saving...",
     "score": "Score",

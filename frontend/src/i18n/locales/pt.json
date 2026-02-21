@@ -152,6 +152,7 @@
         "score": "Pontuação",
         "showAnswer": "Mostrar Resposta",
         "timeRemaining": "Tempo Restante",
+        "spectating": "Você está assistindo este jogo",
         "you": "você",
         "yourRank": "Sua Posição"
     },
@@ -231,6 +232,9 @@
         "roomNamePlaceholder": "Minha sala incrível...",
         "startFailed": "Falha ao iniciar o jogo",
         "startGame": "Iniciar Jogo",
+        "inProgress": "Em Andamento",
+        "spectate": "Assistir",
+        "spectateFailed": "Falha ao assistir sala",
         "subtitle": "Entre em uma sala ou crie sua própria partida",
         "title": "Salas de Jogo",
         "waitingPlayers": "Aguardando jogadores"
@@ -273,6 +277,8 @@
         "playFirst": "Jogue algumas partidas para ver seu histórico aqui!",
         "rank": "Posição",
         "removeAvatar": "Remover Avatar",
+        "cancelRemoveAvatar": "Cancelar remoção",
+        "avatarRemoved": "Avatar removido com sucesso!",
         "saveChanges": "Salvar Alterações",
         "saving": "Salvando...",
         "score": "Pontuação",

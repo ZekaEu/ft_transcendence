@@ -49,13 +49,13 @@ def current_room():
 
 
 # ──────────────────────────────────────────────
-# List available rooms (status = waiting)
+# List available rooms (waiting + playing)
 # ──────────────────────────────────────────────
 @game_bp.route('/rooms', methods=['GET'])
 @jwt_required()
 def list_rooms():
     user_id = int(get_jwt_identity())
-    query = GameRoom.query.filter_by(status='waiting')
+    query = GameRoom.query.filter(GameRoom.status.in_(['waiting', 'playing']))
     rooms = query.order_by(GameRoom.created_at.desc()).all()
 
     # Filter out friends_only rooms where user is not friends with host
@@ -291,6 +291,22 @@ def start_game(room_id):
 
     room.status = 'playing'
     db.session.commit()
+
+    return jsonify(room.to_dict()), 200
+
+
+# ──────────────────────────────────────────────
+# Spectate a playing room
+# ──────────────────────────────────────────────
+@game_bp.route('/rooms/<int:room_id>/spectate', methods=['POST'])
+@jwt_required()
+def spectate_room(room_id):
+    room = GameRoom.query.get(room_id)
+    if not room:
+        return jsonify({'message': 'Room not found'}), 404
+
+    if room.status != 'playing':
+        return jsonify({'message': 'Room is not currently in a game'}), 400
 
     return jsonify(room.to_dict()), 200
 
