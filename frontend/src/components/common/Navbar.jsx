@@ -24,7 +24,10 @@ export function Navbar() {
   }
 
   const toggleLanguage = () => {
-    const nextLang = i18n.language === 'en' ? 'pt' : 'en'
+    const languages = ['en', 'pt', 'es', 'fr']
+    const currentIndex = languages.indexOf(i18n.language)
+    const nextIndex = (currentIndex + 1) % languages.length
+    const nextLang = languages[nextIndex]
     i18n.changeLanguage(nextLang)
     localStorage.setItem('language', nextLang)
   }
@@ -84,7 +87,7 @@ export function Navbar() {
             onClick={toggleLanguage}
             className="px-2 py-1 rounded-lg text-xs font-black bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-primary-500 transition-all uppercase"
           >
-            {i18n.language === 'en' ? 'PT' : 'EN'}
+            {i18n.language.toUpperCase()}
           </button>
 
           <button
