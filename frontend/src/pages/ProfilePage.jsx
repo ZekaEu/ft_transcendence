@@ -355,8 +355,7 @@ function ProfilePage() {
                       }`}>
                         {match.is_winner ? t('profile.victory') : t('profile.defeat')}
                       </span>
-                      <span className="capitalize">{t('profile.mode')}: {match.game_mode}</span>
-                      <span>{t('profile.players')}: {match.total_players}</span>
+                      <span className="capitalize">{t('profile.players')}: {match.total_players}</span>
                     </div>
                   </div>
                 </div>

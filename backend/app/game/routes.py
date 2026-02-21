@@ -53,10 +53,7 @@ def current_room():
 @jwt_required()
 def list_rooms():
     user_id = int(get_jwt_identity())
-    mode = request.args.get('mode')
     query = GameRoom.query.filter_by(status='waiting')
-    if mode:
-        query = query.filter_by(game_mode=mode)
     rooms = query.order_by(GameRoom.created_at.desc()).all()
 
     # Filter out friends_only rooms where user is not friends with host
@@ -90,7 +87,6 @@ def create_room():
     data = request.get_json() or {}
 
     name = (data.get('name') or '').strip()
-    game_mode = data.get('game_mode', 'classic')
     max_players = data.get('max_players', 4)
     question_category = data.get('question_category', 'any')
     question_difficulty = data.get('question_difficulty', 'any')
@@ -99,9 +95,6 @@ def create_room():
 
     if not name:
         return jsonify({'message': 'Room name is required'}), 400
-
-    if game_mode not in ('classic', 'survival', 'timed'):
-        return jsonify({'message': 'Invalid game mode'}), 400
 
     if question_category not in KAHOOT_CATEGORIES:
         return jsonify({'message': 'Invalid question category'}), 400
@@ -127,7 +120,7 @@ def create_room():
     room = GameRoom(
         name=name,
         host_id=user_id,
-        game_mode=game_mode,
+        game_mode='classic',
         max_players=max_players,
         question_category=question_category,
         question_difficulty=question_difficulty,

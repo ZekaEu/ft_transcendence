@@ -37,6 +37,12 @@ export const gameService = {
     return response.data
   },
 
+  // ── Trivia metadata ───────────────────────
+  getCategories: async () => {
+    const response = await apiClient.get('/game/trivia/categories')
+    return response.data
+  },
+
   // ── Rooms ────────────────────────────────
   getCurrentRoom: async () => {
     const response = await apiClient.get('/game/rooms/current')
@@ -49,8 +55,8 @@ export const gameService = {
     return response.data
   },
 
-  createRoom: async ({ name, game_mode, max_players, friends_only, question_language }) => {
-    const response = await apiClient.post('/game/rooms', { name, game_mode, max_players, friends_only, question_language })
+  createRoom: async ({ name, game_mode, max_players, friends_only, question_language, question_category, question_difficulty }) => {
+    const response = await apiClient.post('/game/rooms', { name, game_mode, max_players, friends_only, question_language, question_category, question_difficulty })
     return response.data
   },
 

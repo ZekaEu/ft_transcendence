@@ -152,12 +152,8 @@ def handle_game_started(data):
     if not room or room.status != 'playing':
         return
 
-    # Determine question count based on mode
+    # Fixed question count
     q_count = 10
-    if room.game_mode == 'survival':
-        q_count = 15
-    elif room.game_mode == 'timed':
-        q_count = 10
 
     questions = get_questions(
         count=q_count,

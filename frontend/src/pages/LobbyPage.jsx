@@ -6,14 +6,6 @@ import toast from 'react-hot-toast'
 import { useAuth } from '../hooks/useAuth'
 import { gameService } from '../services/gameService'
 
-const GAME_MODES = ['classic', 'survival', 'timed']
-const MODE_ICONS = { classic: 'school', survival: 'favorite', timed: 'timer' }
-const MODE_COLORS = {
-    classic: 'from-primary-500 to-primary-600',
-    survival: 'from-red-500 to-rose-600',
-    timed: 'from-amber-500 to-orange-600',
-}
-
 function LobbyPage() {
     const { t } = useTranslation()
     const { user } = useAuth()
@@ -21,21 +13,20 @@ function LobbyPage() {
 
     const [rooms, setRooms] = useState([])
     const [loading, setLoading] = useState(true)
-    const [filterMode, setFilterMode] = useState('')
     const [showCreateModal, setShowCreateModal] = useState(false)
     const [activeRoom, setActiveRoom] = useState(null)
 
     // ── Fetch rooms ─────────────────────────
     const fetchRooms = useCallback(async () => {
         try {
-            const data = await gameService.getRooms(filterMode || undefined)
+            const data = await gameService.getRooms()
             setRooms(data)
         } catch {
             // silent
         } finally {
             setLoading(false)
         }
-    }, [filterMode])
+    }, [])
 
     // ── Restore active room on mount ──────
     useEffect(() => {
@@ -190,24 +181,6 @@ function LobbyPage() {
                 </button>
             </div>
 
-            {/* Mode filters */}
-            <div className="flex flex-wrap gap-2">
-                <FilterChip
-                    label={t('lobby.allModes')}
-                    active={filterMode === ''}
-                    onClick={() => setFilterMode('')}
-                />
-                {GAME_MODES.map((mode) => (
-                    <FilterChip
-                        key={mode}
-                        label={t(`home.${mode}`)}
-                        icon={MODE_ICONS[mode]}
-                        active={filterMode === mode}
-                        onClick={() => setFilterMode(mode)}
-                    />
-                ))}
-            </div>
-
             {/* Room list */}
             {loading ? (
                 <div className="flex items-center justify-center py-20">
@@ -260,7 +233,6 @@ function LobbyPage() {
 function RoomCard({ room, onJoin, userId, t }) {
     const isFull = room.player_count >= room.max_players
     const isInRoom = room.players?.some((p) => p.user_id === userId)
-    const modeColor = MODE_COLORS[room.game_mode] || MODE_COLORS.classic
 
     return (
         <div className="glass rounded-2xl p-5 border border-white/10 hover:border-primary-500/30 transition-all group">
@@ -269,10 +241,16 @@ function RoomCard({ room, onJoin, userId, t }) {
                     <h3 className="font-bold text-lg truncate text-slate-800 dark:text-white">
                         {room.name}
                     </h3>
-                    <span className={`inline-flex items-center gap-1 mt-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-gradient-to-r ${modeColor} text-white`}>
-                        <span className="material-icons-round text-sm">{MODE_ICONS[room.game_mode]}</span>
-                        {t(`home.${room.game_mode}`)}
+                    <span className="inline-flex items-center gap-1 mt-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-gradient-to-r from-primary-500 to-primary-600 text-white">
+                        <span className="material-icons-round text-sm">{CATEGORY_ICONS[room.question_category] || 'quiz'}</span>
+                        {t(`lobby.cat_${room.question_category}`, { defaultValue: room.question_category || 'Any' })}
                     </span>
+                    {room.question_difficulty && room.question_difficulty !== 'any' && (
+                        <span className={`inline-flex items-center gap-1 mt-1 ml-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-gradient-to-r ${DIFFICULTY_COLORS[room.question_difficulty] || DIFFICULTY_COLORS.any} text-white`}>
+                            <span className="material-icons-round text-sm">{DIFFICULTY_ICONS[room.question_difficulty] || 'help'}</span>
+                            {t(`lobby.diff_${room.question_difficulty}`, { defaultValue: room.question_difficulty })}
+                        </span>
+                    )}
                     {room.friends_only && (
                         <span className="inline-flex items-center gap-1 mt-1 ml-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
                             <span className="material-icons-round text-sm">group</span>
@@ -334,7 +312,6 @@ function RoomDetail({ room, user, onLeave, onReady, onStart, t }) {
     const myPlayer = room.players?.find((p) => p.user_id === user?.id)
     const allReady = room.players?.every((p) => p.is_ready || p.user_id === room.host_id)
     const hasEnoughPlayers = room.player_count >= 2
-    const modeColor = MODE_COLORS[room.game_mode] || MODE_COLORS.classic
 
     return (
         <div className="max-w-3xl mx-auto space-y-8">
@@ -347,10 +324,18 @@ function RoomDetail({ room, user, onLeave, onReady, onStart, t }) {
             </button>
 
             <div className="glass rounded-2xl p-8 border border-white/10 text-center space-y-4">
-                <span className={`inline-flex items-center gap-2 text-sm font-semibold px-4 py-1.5 rounded-full bg-gradient-to-r ${modeColor} text-white`}>
-                    <span className="material-icons-round text-base">{MODE_ICONS[room.game_mode]}</span>
-                    {t(`home.${room.game_mode}`)}
-                </span>
+                <div className="flex items-center justify-center gap-2 flex-wrap">
+                    <span className="inline-flex items-center gap-2 text-sm font-semibold px-4 py-1.5 rounded-full bg-gradient-to-r from-primary-500 to-primary-600 text-white">
+                        <span className="material-icons-round text-base">{CATEGORY_ICONS[room.question_category] || 'quiz'}</span>
+                        {t(`lobby.cat_${room.question_category}`, { defaultValue: room.question_category || 'Any' })}
+                    </span>
+                    {room.question_difficulty && room.question_difficulty !== 'any' && (
+                        <span className={`inline-flex items-center gap-2 text-sm font-semibold px-4 py-1.5 rounded-full bg-gradient-to-r ${DIFFICULTY_COLORS[room.question_difficulty] || DIFFICULTY_COLORS.any} text-white`}>
+                            <span className="material-icons-round text-base">{DIFFICULTY_ICONS[room.question_difficulty] || 'help'}</span>
+                            {t(`lobby.diff_${room.question_difficulty}`, { defaultValue: room.question_difficulty })}
+                        </span>
+                    )}
+                </div>
                 <h1 className="text-3xl font-black text-slate-800 dark:text-white">{room.name}</h1>
                 <p className="text-slate-500 dark:text-slate-400">
                     {t('lobby.waitingPlayers')} ({room.player_count}/{room.max_players})
@@ -434,25 +419,69 @@ function RoomDetail({ room, user, onLeave, onReady, onStart, t }) {
 // ──────────────────────────────────────────────
 // Create Room Modal
 // ──────────────────────────────────────────────
+const CATEGORY_ICONS = {
+    any: 'shuffle', science: 'science', geography: 'public', history: 'history_edu',
+    art: 'palette', music: 'music_note', sports: 'sports_soccer', literature: 'menu_book',
+    movies: 'movie', technology: 'computer', math: 'calculate', nature: 'park',
+    food: 'restaurant', gaming: 'sports_esports', pop_culture: 'star', languages: 'translate',
+}
+
+const DIFFICULTY_ICONS = { any: 'shuffle', easy: 'sentiment_satisfied', medium: 'sentiment_neutral', hard: 'sentiment_very_dissatisfied' }
+const DIFFICULTY_COLORS = {
+    any: 'from-slate-400 to-slate-500',
+    easy: 'from-green-500 to-emerald-600',
+    medium: 'from-amber-500 to-orange-600',
+    hard: 'from-red-500 to-rose-600',
+}
+
 function CreateRoomModal({ onClose, onCreate, t }) {
     const [name, setName] = useState('')
-    const [gameMode, setGameMode] = useState('classic')
     const [maxPlayers, setMaxPlayers] = useState(4)
     const [friendsOnly, setFriendsOnly] = useState(false)
     const [submitting, setSubmitting] = useState(false)
+    const [category, setCategory] = useState('any')
+    const [difficulty, setDifficulty] = useState('any')
+    const [categories, setCategories] = useState([])
+    const [difficulties, setDifficulties] = useState([])
+    const [loadingMeta, setLoadingMeta] = useState(true)
+
+    useEffect(() => {
+        const fetchMeta = async () => {
+            try {
+                const data = await gameService.getCategories()
+                setCategories(data.categories || [])
+                setDifficulties(data.difficulties || [])
+            } catch {
+                // fallback
+                setCategories([{ key: 'any', label: 'Any' }])
+                setDifficulties(['any', 'easy', 'medium', 'hard'])
+            } finally {
+                setLoadingMeta(false)
+            }
+        }
+        fetchMeta()
+    }, [])
 
     const handleSubmit = async (e) => {
         e.preventDefault()
         if (!name.trim()) return
         setSubmitting(true)
         const currentLang = i18n.language;
-        await onCreate({ name: name.trim(), game_mode: gameMode, max_players: maxPlayers, friends_only: friendsOnly, question_language: currentLang })
+        await onCreate({
+            name: name.trim(),
+            game_mode: 'classic',
+            max_players: maxPlayers,
+            friends_only: friendsOnly,
+            question_language: currentLang,
+            question_category: category,
+            question_difficulty: difficulty,
+        })
         setSubmitting(false)
     }
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-            <div className="glass rounded-2xl p-6 w-full max-w-md border border-white/10 shadow-2xl mx-4">
+            <div className="glass rounded-2xl p-6 w-full max-w-lg border border-white/10 shadow-2xl mx-4 max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-xl font-bold text-slate-800 dark:text-white">
                         {t('lobby.createRoom')}
@@ -463,6 +492,7 @@ function CreateRoomModal({ onClose, onCreate, t }) {
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-5">
+                    {/* Room name */}
                     <div>
                         <label className="block text-sm font-semibold text-slate-600 dark:text-slate-300 mb-1.5">
                             {t('lobby.roomName')}
@@ -478,28 +508,59 @@ function CreateRoomModal({ onClose, onCreate, t }) {
                         />
                     </div>
 
+                    {/* Category */}
                     <div>
                         <label className="block text-sm font-semibold text-slate-600 dark:text-slate-300 mb-1.5">
-                            {t('lobby.gameMode')}
+                            {t('lobby.category')}
                         </label>
-                        <div className="grid grid-cols-3 gap-2">
-                            {GAME_MODES.map((mode) => (
+                        {loadingMeta ? (
+                            <div className="flex justify-center py-4">
+                                <div className="w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-4 gap-2">
+                                {categories.map((cat) => (
+                                    <button
+                                        key={cat.key}
+                                        type="button"
+                                        onClick={() => setCategory(cat.key)}
+                                        className={`py-2 px-1 rounded-xl text-xs font-semibold transition-all flex flex-col items-center gap-1 ${category === cat.key
+                                            ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg'
+                                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                                            }`}
+                                    >
+                                        <span className="material-icons-round text-lg">{CATEGORY_ICONS[cat.key] || 'category'}</span>
+                                        {t(`lobby.cat_${cat.key}`, { defaultValue: cat.label })}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Difficulty */}
+                    <div>
+                        <label className="block text-sm font-semibold text-slate-600 dark:text-slate-300 mb-1.5">
+                            {t('lobby.difficulty')}
+                        </label>
+                        <div className="grid grid-cols-4 gap-2">
+                            {difficulties.map((diff) => (
                                 <button
-                                    key={mode}
+                                    key={diff}
                                     type="button"
-                                    onClick={() => setGameMode(mode)}
-                                    className={`py-3 rounded-xl text-sm font-semibold transition-all flex flex-col items-center gap-1 ${gameMode === mode
-                                        ? `bg-gradient-to-r ${MODE_COLORS[mode]} text-white shadow-lg`
+                                    onClick={() => setDifficulty(diff)}
+                                    className={`py-2.5 rounded-xl text-sm font-semibold transition-all flex flex-col items-center gap-1 ${difficulty === diff
+                                        ? `bg-gradient-to-r ${DIFFICULTY_COLORS[diff] || DIFFICULTY_COLORS.any} text-white shadow-lg`
                                         : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                                         }`}
                                 >
-                                    <span className="material-icons-round text-lg">{MODE_ICONS[mode]}</span>
-                                    {t(`home.${mode}`)}
+                                    <span className="material-icons-round text-lg">{DIFFICULTY_ICONS[diff] || 'help'}</span>
+                                    {t(`lobby.diff_${diff}`, { defaultValue: diff.charAt(0).toUpperCase() + diff.slice(1) })}
                                 </button>
                             ))}
                         </div>
                     </div>
 
+                    {/* Max players */}
                     <div>
                         <label className="block text-sm font-semibold text-slate-600 dark:text-slate-300 mb-1.5">
                             {t('lobby.maxPlayers')}: {maxPlayers}
@@ -518,6 +579,7 @@ function CreateRoomModal({ onClose, onCreate, t }) {
                         </div>
                     </div>
 
+                    {/* Friends only */}
                     <div className="flex items-center gap-3">
                         <button
                             type="button"
@@ -542,24 +604,6 @@ function CreateRoomModal({ onClose, onCreate, t }) {
                 </form>
             </div>
         </div>
-    )
-}
-
-// ──────────────────────────────────────────────
-// Filter chip
-// ──────────────────────────────────────────────
-function FilterChip({ label, icon, active, onClick }) {
-    return (
-        <button
-            onClick={onClick}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all ${active
-                ? 'bg-primary-500 text-white shadow-md shadow-primary-500/20'
-                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-                }`}
-        >
-            {icon && <span className="material-icons-round text-base">{icon}</span>}
-            {label}
-        </button>
     )
 }
 
