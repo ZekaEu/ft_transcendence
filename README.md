@@ -8,11 +8,11 @@
 
 | Membro | Papel(is) | Responsabilidades |
 |--------|-----------|-------------------|
-| **edcastro** | Tech Lead (Backend) | Arquitetura do backend Flask, design de APIs REST, configuração do banco de dados MySQL, integração OAuth 2.0, e liderança técnica da camada backend |
-| **rilopes** | Tech Lead (Frontend) | Arquitetura React, design do sistema de componentes, integração Socket.io, gerenciamento de estado (Context API), e liderança técnica da camada frontend |
-| **dsayumi-** | Product Owner + Developer | Visão do produto, coordenação entre times, features de internacionalização (i18n), e desenvolvimento full-stack (frontend + backend) |
-| **jovicto2** | Developer (Backend) | Implementação de features backend (game logic, chat, leaderboard), testes unitários, otimização de queries, e WebSocket event handlers |
-| **joscarlo** | Developer (Frontend) | Implementação de componentes React, UI/UX com Tailwind CSS, responsividade mobile, e integração de features frontend |
+| **edcastro** | Tech Lead / Developer (Backend) | Arquitetura do backend Flask, design de APIs REST, configuração do banco de dados MySQL, integração OAuth 2.0, e liderança técnica da camada backend |
+| **rilopes** | Product Manager / Developer (Frontend) | Design do sistema de componentes, integração Socket.io, gerenciamento de estado (Context API) e WebSocket event handlers |
+| **dsayumi-** | Product Owner / Developer (Frontend) | Visão do produto, coordenação entre times, features de internacionalização (i18n), e desenvolvimento full-stack (frontend + backend) |
+| **jovicto2** | Developer (Backend) | Implementação de features backend (game logic, chat, leaderboard), testes unitários, otimização de queries |
+| **joscarlo** | Developer (Frontend) | Arquitetura React, implementação de componentes React, UI/UX com Tailwind CSS, responsividade, e integração de features frontend |
 
 ---
 
