@@ -8,11 +8,11 @@
 
 | Membro | Papel(is) | Responsabilidades |
 |--------|-----------|-------------------|
-| **edcastro** | Tech Lead (Backend) | Arquitetura do backend Flask, design de APIs REST, configuração do banco de dados MySQL, integração OAuth 2.0, e liderança técnica da camada backend |
-| **rilopes** | Tech Lead (Frontend) | Arquitetura React, design do sistema de componentes, integração Socket.io, gerenciamento de estado (Context API), e liderança técnica da camada frontend |
-| **dsayumi-** | Product Owner + Developer | Visão do produto, coordenação entre times, features de internacionalização (i18n), e desenvolvimento full-stack (frontend + backend) |
-| **jovicto2** | Developer (Backend) | Implementação de features backend (game logic, chat, leaderboard), testes unitários, otimização de queries, e WebSocket event handlers |
-| **joscarlo** | Developer (Frontend) | Implementação de componentes React, UI/UX com Tailwind CSS, responsividade mobile, e integração de features frontend |
+| **edcastro** | Tech Lead / Developer (Backend) | Arquitetura do backend Flask, design de APIs REST, configuração do banco de dados MySQL, integração OAuth 2.0, e liderança técnica da camada backend |
+| **rilopes** | Product Manager / Developer (Frontend) | Design do sistema de componentes, integração Socket.io, gerenciamento de estado (Context API) e WebSocket event handlers |
+| **dsayumi-** | Product Owner / Developer (Frontend) | Visão do produto, coordenação entre times, features de internacionalização (i18n), e desenvolvimento full-stack (frontend + backend) |
+| **jovicto2** | Developer (Backend) | Implementação de features backend (game logic, chat, leaderboard), testes unitários, otimização de queries |
+| **joscarlo** | Developer (Frontend) | Arquitetura React, implementação de componentes React, UI/UX com Tailwind CSS, responsividade, e integração de features frontend |
 
 ---
 
@@ -153,14 +153,17 @@ O objetivo deste projeto é demonstrar proficiência em desenvolvimento web full
 
 #### Schema do Banco
 
-Principais entidades:
+Principais entidades (13 tabelas):
 
-- **users**: Autenticação, perfil, estatísticas
-- **game_rooms**: Salas de jogo, categoria, configurações
-- **game_matches**: Histórico de partidas, resultados, scores
-- **chat_messages**: Mensagens de chat direto e grupo
-- **user_friends**: Relacionamento entre amigos
-- **leaderboards**: Cache de rankings para performance
+- **users**: Autenticação, perfil, XP, estatísticas
+- **oauth_accounts**: Contas OAuth vinculadas (42 Intra, Google)
+- **revoked_tokens**: Blocklist de tokens JWT revogados
+- **chat_rooms / chat_room_members / chat_messages**: Sistema de chat (DM e grupo)
+- **game_rooms / game_room_players**: Salas de trivia e jogadores
+- **memory_game_rooms / memory_game_players**: Salas de jogo da memória e jogadores
+- **user_powerups**: Inventário de power-ups da loja
+- **match_history**: Histórico unificado de partidas (trivia + memória)
+- **friendships**: Relações de amizade entre usuários
 
 ---
 
@@ -219,9 +222,13 @@ O banco de dados foi projetado com as seguintes características:
 │     │                        ├─ provider (42, Google, etc.)
 │     │                        └─ access_token
 │     │
-│     └────────(1)─────────(N) revoked_tokens
-│                               ├─ jti (JWT ID)
-│                               └─ revoked_at
+│     ├────────(1)─────────(N) revoked_tokens
+│     │                         ├─ jti (JWT ID)
+│     │                         └─ revoked_at
+│     │
+│     └────────(1)─────────(N) user_powerups
+│                               ├─ powerup_type (VARCHAR)
+│                               └─ quantity (INT)
 │
 ├─────────────────────────────────────────────────────────────────┤
 │                        CHAT (MENSAGENS)                         │
@@ -236,18 +243,43 @@ O banco de dados foi projetado com as seguintes características:
 │         (many-to-many com junction table)
 │
 ├─────────────────────────────────────────────────────────────────┤
-│                     JOGOS (GAME ROOMS)                          │
+│                   TRIVIA (GAME ROOMS)                           │
 ├─────────────────────────────────────────────────────────────────┤
 │
 │  users (1)───────────────(N) game_rooms
-│     │                         ├─ name (VARCHAR)
-│     │                         ├─ question_category (VARCHAR)
-│     │                         ├─ max_players (INT)
-│     │                         └─ friends_only (BOOLEAN)
+│     │                         ├─ name, game_mode
+│     │                         ├─ question_category / difficulty / language
+│     │                         ├─ max_players, friends_only
+│     │                         └─ status (waiting/playing/finished)
 │     │
 │     └────(M2M)─ game_room_players ─(M2M)─── game_rooms
 │         ├─ is_ready (BOOLEAN)
 │         └─ score (INT)
+│
+├─────────────────────────────────────────────────────────────────┤
+│                   MEMORY (GAME ROOMS)                           │
+├─────────────────────────────────────────────────────────────────┤
+│
+│  users (1)───────────────(N) memory_game_rooms
+│     │                         ├─ name, board_size, theme
+│     │                         ├─ max_players, friends_only
+│     │                         └─ status (waiting/playing/finished)
+│     │
+│     └────(M2M)─ memory_game_players ─(M2M)── memory_game_rooms
+│         ├─ is_ready (BOOLEAN)
+│         ├─ score (INT)
+│         └─ pairs_found (INT)
+│
+├─────────────────────────────────────────────────────────────────┤
+│                  HISTÓRICO UNIFICADO                             │
+├─────────────────────────────────────────────────────────────────┤
+│
+│  users (1)───────────────(N) match_history
+│                               ├─ game_type (trivia/memory)
+│                               ├─ room_id, room_name
+│                               ├─ score, rank, total_players
+│                               ├─ is_winner (BOOLEAN)
+│                               └─ played_at (DATETIME)
 │
 ├─────────────────────────────────────────────────────────────────┤
 │                     AMIGOS (FRIENDSHIPS)                        │
@@ -276,6 +308,7 @@ O banco de dados foi projetado com as seguintes características:
 | `avatar_url` | VARCHAR(512) | NULL | URL da foto de perfil (CDN ou blob storage) |
 | `display_name` | VARCHAR(128) | NULL | Nome exibido no perfil e no jogo |
 | `bio` | VARCHAR(500) | NULL | Biografia do usuário |
+| `xp` | INT | NOT NULL, DEFAULT 0 | Pontos de experiência acumulados |
 | `is_active` | BOOLEAN | NOT NULL, DEFAULT TRUE | Conta ativa/desativada |
 | `is_online` | BOOLEAN | NOT NULL, DEFAULT FALSE | Status online em tempo real |
 | `last_seen` | DATETIME | NULL | Último timestamp de atividade |
@@ -394,7 +427,75 @@ O banco de dados foi projetado com as seguintes características:
 
 ---
 
-#### 9. **friendships** — Relação de Amizade
+#### 9. **user_powerups** — Power-ups do Usuário (Inventário da Loja)
+
+| Campo | Tipo | Constraints | Descrição |
+|-------|------|-----------|----------|
+| `id` | INT | PRIMARY KEY, AUTO_INCREMENT | ID único da entrada |
+| `user_id` | INT | NOT NULL, FK→users.id | Referência ao usuário |
+| `powerup_type` | VARCHAR(32) | NOT NULL | Tipo do power-up ('fifty_fifty', 'extra_time', etc.) |
+| `quantity` | INT | NOT NULL, DEFAULT 0 | Quantidade disponível |
+
+**Constraints**: UNIQUE(user_id, powerup_type) — Cada tipo de power-up é único por usuário
+
+**Índices**: `idx_powerup_user`
+
+---
+
+#### 10. **memory_game_rooms** — Salas de Jogo da Memória
+
+| Campo | Tipo | Constraints | Descrição |
+|-------|------|-----------|----------|
+| `id` | INT | PRIMARY KEY, AUTO_INCREMENT | ID único da sala |
+| `name` | VARCHAR(128) | NOT NULL | Nome da sala |
+| `host_id` | INT | NOT NULL, FK→users.id | Criador/host da sala |
+| `board_size` | VARCHAR(16) | NOT NULL, DEFAULT 'medium' | Tamanho do tabuleiro ('small', 'medium', 'large') |
+| `theme` | VARCHAR(32) | NOT NULL, DEFAULT 'animals' | Tema visual das cartas |
+| `max_players` | INT | NOT NULL, DEFAULT 4 | Limite de jogadores |
+| `friends_only` | BOOLEAN | NOT NULL, DEFAULT FALSE | Apenas amigos podem entrar |
+| `status` | VARCHAR(20) | NOT NULL, DEFAULT 'waiting' | Status ('waiting', 'playing', 'finished') |
+| `created_at` | DATETIME | NOT NULL, DEFAULT NOW() | Data de criação da sala |
+
+**Índices**: `idx_memoryroom_status`
+
+---
+
+#### 11. **memory_game_players** — Jogadores do Jogo da Memória (Many-to-Many)
+
+| Campo | Tipo | Constraints | Descrição |
+|-------|------|-----------|----------|
+| `id` | INT | PRIMARY KEY, AUTO_INCREMENT | ID único da entrada |
+| `room_id` | INT | NOT NULL, FK→memory_game_rooms.id | Referência à sala de memória |
+| `user_id` | INT | NOT NULL, FK→users.id | Referência ao usuário |
+| `is_ready` | BOOLEAN | NOT NULL, DEFAULT FALSE | Jogador pronto? |
+| `score` | INT | NOT NULL, DEFAULT 0 | Score do jogador |
+| `pairs_found` | INT | NOT NULL, DEFAULT 0 | Pares encontrados pelo jogador |
+| `joined_at` | DATETIME | NOT NULL, DEFAULT NOW() | Data de entrada |
+
+**Constraints**: UNIQUE(room_id, user_id) — Um jogador não pode aparecer 2x na mesma sala
+
+---
+
+#### 12. **match_history** — Histórico Unificado de Partidas (Trivia + Memória)
+
+| Campo | Tipo | Constraints | Descrição |
+|-------|------|-----------|----------|
+| `id` | INT | PRIMARY KEY, AUTO_INCREMENT | ID único do registro |
+| `user_id` | INT | NOT NULL, FK→users.id | Referência ao jogador |
+| `game_type` | VARCHAR(16) | NOT NULL | Tipo de jogo ('trivia' ou 'memory') |
+| `room_id` | INT | NOT NULL | ID da sala em que jogou |
+| `room_name` | VARCHAR(128) | NOT NULL | Nome da sala |
+| `score` | INT | NOT NULL, DEFAULT 0 | Pontuação obtida |
+| `is_winner` | BOOLEAN | NOT NULL, DEFAULT FALSE | Se venceu a partida |
+| `total_players` | INT | NOT NULL, DEFAULT 2 | Total de jogadores na partida |
+| `rank` | INT | NOT NULL, DEFAULT 1 | Posição final no ranking da partida |
+| `played_at` | DATETIME | NOT NULL, DEFAULT NOW() | Data/hora da partida |
+
+**Índices**: `idx_mh_user`, `idx_mh_game_type`, `idx_mh_played_at` — Consultas por jogador, tipo de jogo e período
+
+---
+
+#### 13. **friendships** — Relação de Amizade
 
 | Campo | Tipo | Constraints | Descrição |
 |-------|------|-----------|-----------|
@@ -424,6 +525,8 @@ O banco de dados foi projetado com as seguintes características:
 | **Booleans** | Mais eficientes que ENUM ou VARCHAR para dados binários |
 | **Timestamps** | DATETIME para legibilidade; poderia ser UNIX_TIMESTAMP para performance |
 | **NULL allowance** | Minimizado onde possível, mas necessário em casos como `avatar_url`, `oauth_token`, etc. |
+| **Histórico Unificado** | `match_history` armazena partidas de trivia e memória numa única tabela com `game_type` discriminador, simplificando queries de perfil e ranking |
+| **Inventário de Power-ups** | `user_powerups` com UNIQUE(user_id, powerup_type) garante uma linha por tipo, atualizando apenas `quantity` |
 
 ---
 
