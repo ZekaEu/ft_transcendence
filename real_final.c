@@ -28,7 +28,7 @@ void err(char *msg) {
 void broadcast(int e) {
 	for(int fd = 0; fd <= max_fd; fd++)
 		if(FD_ISSET(fd, &write_fds) && fd != e)
-			if(send(fd, send_buff, strlen(send_buff), 0) < 0);
+			send(fd, send_buff, strlen(send_buff), 0);
 }
 
 int main(int argc, char **argv) {
@@ -50,8 +50,8 @@ int main(int argc, char **argv) {
 	memset(&server, 0, sizeof(server));
 
 	server.sin_port = htons(atoi(argv[1]));
-	server.sin_family = AF_INET;
 	server.sin_addr.s_addr = htonl(INADDR_ANY);
+	server.sin_family = AF_INET;
 
 	if(bind(server_fd, (struct sockaddr *)&server, sizeof(server)) < 0) {
         close(server_fd);
@@ -65,7 +65,7 @@ int main(int argc, char **argv) {
 	while(1) {
 		write_fds = curr_fds;
 		read_fds = curr_fds;
-		if(select(max_fd + 1, &read_fds, &write_fds, NULL, NULL) < 0) {
+		if(select(max_fd + 1, &read_fds, &write_fds, NULL, NULL) < 0) { //se n]ao funfar, tenta usar apenas 'continue ;' invés das próximas três linhas
 			close(server_fd);
 			FD_CLR(server_fd, &curr_fds);
 			err(NULL);
